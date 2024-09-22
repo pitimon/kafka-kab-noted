@@ -74,6 +74,7 @@
      --max-messages 1 \
      --consumer.config k0100-client.properties
    ```
+   - [consumer group](./ACL-k0100-consomer-group.md)
 
 2. ตรวจสอบ consumer group:
 ```bash
