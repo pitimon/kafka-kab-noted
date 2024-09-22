@@ -3,7 +3,9 @@
 - kafka.ipv9.me:9092,kafka.ipv9.me:9093,kafka.ipv9.me:9094
 ## security.protocol
 - SASL_SSL
-## [Server certificate](http://sp06.ipv9.xyz/keys/kafka.truststore.jks)
+## [download Server certificate](http://sp06.ipv9.xyz/keys/kafka.truststore.jks)
+- truststore.password = '   '
+  
 
 - [1.ACL](./ACL-k0100-test.md)
 - [2.usecase](./LogCentral-usercase/1.Create-Topic.md)
