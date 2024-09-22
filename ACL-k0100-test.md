@@ -30,6 +30,14 @@
   --command-config admin-client.properties \
   --add --allow-principal User:k0100 \
   --operation Write --topic eduroam-log
+```
+
+- k0100 สามารถอ่านข้อมูลจาก topic eduroam-log
+```
+./bin/kafka-acls.sh --bootstrap-server kafka.ipv9.me:9092,kafka.ipv9.me:9093,kafka.ipv9.me:9094 \
+  --command-config admin-client.properties \
+  --add --allow-principal User:k0100 \
+  --operation Read --topic eduroam-log
 
 ./bin/kafka-acls.sh --bootstrap-server kafka.ipv9.me:9092,kafka.ipv9.me:9093,kafka.ipv9.me:9094 \
   --command-config admin-client.properties \
@@ -38,7 +46,7 @@
 ```
 
 ---
-4. ทดสอบการทำงานกับ topic eduroam-log:
+1. ทดสอบการทำงานกับ topic eduroam-log:
 
    a. ทดสอบการอ่านข้อมูล:
    ```bash
@@ -67,7 +75,7 @@
      --consumer.config k0100-client.properties
    ```
 
-5. ตรวจสอบ consumer group:
+2. ตรวจสอบ consumer group:
 ```bash
 ./bin/kafka-consumer-groups.sh --bootstrap-server kafka.ipv9.me:9092,kafka.ipv9.me:9093,kafka.ipv9.me:9094 \
   --describe --group k0100-test-group \
