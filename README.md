@@ -6,7 +6,7 @@
 ## [download Server certificate](http://sp06.ipv9.xyz/keys/kafka.truststore.jks)
 - truststore.password = '   '
   
-
+---
 - [1.ACL](./ACL-k0100-test.md)
 - [2.usecase](./LogCentral-usercase/1.Create-Topic.md)
 
