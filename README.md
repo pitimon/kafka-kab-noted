@@ -7,7 +7,7 @@
 - truststore.password = '   '
   
 ---
-- [1.ACL](./ACL-k0100-test.md)
+- [1.ACL](./ACL-topic/1.ACL-k0100-test.md)
 - [2.usecase](./LogCentral-usercase/1.Create-Topic.md)
 
 ---
