@@ -314,3 +314,4 @@ func main() {
         log.Printf("Starting from the beginning: %v", strings.ToLower(startFromBeginning) == "y")
 
         processLogs(endDatetime, strings.ToLower(startFromBeginning) == "y")
+}
