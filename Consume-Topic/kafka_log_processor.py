@@ -185,10 +185,18 @@ def process_logs(end_datetime, start_from_beginning):
         consumer.close()
 
     logging.info(f"Total processed: {processed_count}, Total skipped: {skipped_count}")
+    
+    print("\nIP Addresses Denied:")
+    for ip, count in ip_counter.most_common():
+        print(f"{ip}: {count}")
+
+    print("\nDomains Denied:")
+    for domain, count in domain_counter.most_common():
+        print(f"{domain}: {count}")
 
     print("\nProcessing Summary:")
     print(f"Total messages processed: {processed_count}")
-    
+
     if first_message:
         print(f"\nFirst processed message:")
         print(f"Time: {first_message[0]}")
@@ -198,14 +206,6 @@ def process_logs(end_datetime, start_from_beginning):
         print(f"\nLast processed message:")
         print(f"Time: {last_message[0]}")
         print(f"Raw message: {last_message[1]}")
-
-    print("\nIP Addresses Denied:")
-    for ip, count in ip_counter.most_common():
-        print(f"{ip}: {count}")
-
-    print("\nDomains Denied:")
-    for domain, count in domain_counter.most_common():
-        print(f"{domain}: {count}")
 
 if __name__ == "__main__":
     end_datetime = get_end_datetime()
