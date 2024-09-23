@@ -4,7 +4,7 @@
 ## security.protocol
 - SASL_SSL
 ## [download Server certificate](http://sp06.ipv9.xyz/keys/kafka.truststore.jks)
-- truststore.password = '   '
+- truststore.password = 'นั้นซิ คงไม่บอกหรอกนะ ช่องทางนี้ public ซ่ะด้วย'
   
 ---
 - [1.ACL](./ACL-topic/1.ACL-k0100-test.md)
