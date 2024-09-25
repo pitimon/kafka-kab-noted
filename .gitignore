@@ -25,4 +25,4 @@ replay_pid*
 
 user-properties/*
 kafka-log-process-Go/k0100-client.properties
-kafka-log-process-Go/kafka-log-process 
+kafka-log-process-Go/kafka-log-processor
