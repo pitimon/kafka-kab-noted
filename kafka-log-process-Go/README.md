@@ -2,6 +2,8 @@
 - Topic: logCental
 - security: SASL_SSL
 
+- source /var/log/bind9/security.log => kafka topic
+
 ---
 
 - [Go download](https://go.dev/dl/)
