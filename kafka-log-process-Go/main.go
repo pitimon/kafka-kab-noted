@@ -207,7 +207,7 @@ func timestampToDatetime(timestamp float64) time.Time {
         return time.Unix(int64(sec), int64(dec*(1e9))).In(time.Local)
 }
 
-func getStartDatetime(endDatetime time.Time) time.Time {
+func getStartDatetime(endDatetime time.Time) (time.Time, bool) {
     reader := bufio.NewReader(os.Stdin)
     for {
         fmt.Println("\nChoose start time option:")
@@ -226,19 +226,19 @@ func getStartDatetime(endDatetime time.Time) time.Time {
 
         switch choice {
         case "1":
-            return endDatetime.Add(-1 * time.Hour)
+            return endDatetime.Add(-1 * time.Hour), false
         case "2":
-            return endDatetime.Add(-6 * time.Hour)
+            return endDatetime.Add(-6 * time.Hour), false
         case "3":
-            return endDatetime.Add(-12 * time.Hour)
+            return endDatetime.Add(-12 * time.Hour), false
         case "4":
-            return endDatetime.Add(-24 * time.Hour)
+            return endDatetime.Add(-24 * time.Hour), false
         case "5":
-            return endDatetime.Add(-7 * 24 * time.Hour)
+            return endDatetime.Add(-7 * 24 * time.Hour), false
         case "6":
-            return endDatetime.Add(-30 * 24 * time.Hour)
+            return endDatetime.Add(-30 * 24 * time.Hour), false
         case "7":
-            return time.Time{} // Zero time means all available data
+            return time.Time{}, true // Return zero time and set StartFromBeginning to true
         case "8":
             for {
                 fmt.Print("Enter the start date and time (YYYY-MM-DD HH:MM:SS): ")
@@ -246,7 +246,7 @@ func getStartDatetime(endDatetime time.Time) time.Time {
                 dateStr = strings.TrimSpace(dateStr)
                 startDatetime, err := time.ParseInLocation("2006-01-02 15:04:05", dateStr, time.Local)
                 if err == nil {
-                    return startDatetime
+                    return startDatetime, false
                 }
                 fmt.Println("Invalid date and time format. Please use YYYY-MM-DD HH:MM:SS.")
             }
@@ -598,11 +598,13 @@ func encryptSensitiveData(data string) (string, error) {
 }
 
 func main() {
-		endDatetime := getEndDatetime()
-		startDatetime := getStartDatetime(endDatetime)
+    endDatetime := getEndDatetime()
+    startDatetime, startFromBeginning := getStartDatetime(endDatetime)
 
-		log.Printf("Script will process messages from %v to %v", startDatetime, endDatetime)
-		log.Printf("Starting from the beginning: %v", config.StartFromBeginning)
+    config.StartFromBeginning = startFromBeginning
+
+    log.Printf("Script will process messages from %v to %v", startDatetime, endDatetime)
+    log.Printf("Starting from the beginning: %v", config.StartFromBeginning)
 
 		defer geoIP.Close()
 		defer geoIPASN.Close()
