@@ -469,195 +469,195 @@ func generateSummary(ipCountryCounter map[string]map[string]int, domainCounter m
     return output.String()
 }
 
-        func getTopCountries(ipCountryCounter map[string]map[string]int, n int) string {
-                var output strings.Builder
-                type kv struct {
-                        Key   string
-                        Value int
-                }
+func getTopCountries(ipCountryCounter map[string]map[string]int, n int) string {
+		var output strings.Builder
+		type kv struct {
+				Key   string
+				Value int
+		}
 
-                var ss []kv
-                for country, ips := range ipCountryCounter {
-                        total := 0
-                        for _, count := range ips {
-                                total += count
-                        }
-                        ss = append(ss, kv{country, total})
-                }
+		var ss []kv
+		for country, ips := range ipCountryCounter {
+				total := 0
+				for _, count := range ips {
+						total += count
+				}
+				ss = append(ss, kv{country, total})
+		}
 
-                sort.Slice(ss, func(i, j int) bool {
-                        return ss[i].Value > ss[j].Value
-                })
+		sort.Slice(ss, func(i, j int) bool {
+				return ss[i].Value > ss[j].Value
+		})
 
-                for i := 0; i < n && i < len(ss); i++ {
-                        fmt.Fprintf(&output, "%s: %d\n", ss[i].Key, ss[i].Value)
-                }
-                return output.String()
-        }
+		for i := 0; i < n && i < len(ss); i++ {
+				fmt.Fprintf(&output, "%s: %d\n", ss[i].Key, ss[i].Value)
+		}
+		return output.String()
+}
 
-        func getTopN(counter map[string]int, n int) string {
-                var output strings.Builder
-                type kv struct {
-                        Key   string
-                        Value int
-                }
+func getTopN(counter map[string]int, n int) string {
+		var output strings.Builder
+		type kv struct {
+				Key   string
+				Value int
+		}
 
-                var ss []kv
-                for k, v := range counter {
-                        ss = append(ss, kv{k, v})
-                }
+		var ss []kv
+		for k, v := range counter {
+				ss = append(ss, kv{k, v})
+		}
 
-                sort.Slice(ss, func(i, j int) bool {
-                        return ss[i].Value > ss[j].Value
-                })
+		sort.Slice(ss, func(i, j int) bool {
+				return ss[i].Value > ss[j].Value
+		})
 
-                for i := 0; i < n && i < len(ss); i++ {
-                        fmt.Fprintf(&output, "%s: %d\n", ss[i].Key, ss[i].Value)
-                }
-                return output.String()
-        }
+		for i := 0; i < n && i < len(ss); i++ {
+				fmt.Fprintf(&output, "%s: %d\n", ss[i].Key, ss[i].Value)
+		}
+		return output.String()
+}
 
-        func ensureResultDirectory() error {
-                if _, err := os.Stat("result"); os.IsNotExist(err) {
-                        return os.Mkdir("result", 0755)
-                }
-                return nil
-        }
+func ensureResultDirectory() error {
+		if _, err := os.Stat("result"); os.IsNotExist(err) {
+				return os.Mkdir("result", 0755)
+		}
+		return nil
+}
 
-        func saveOutputToFile(filename string, content string) error {
-                if err := ensureResultDirectory(); err != nil {
-                        return fmt.Errorf("failed to create result directory: %v", err)
-                }
+func saveOutputToFile(filename string, content string) error {
+		if err := ensureResultDirectory(); err != nil {
+				return fmt.Errorf("failed to create result directory: %v", err)
+		}
 
-                fullPath := filepath.Join("result", filename)
-                file, err := os.Create(fullPath)
-                if err != nil {
-                        return err
-                }
-                defer file.Close()
+		fullPath := filepath.Join("result", filename)
+		file, err := os.Create(fullPath)
+		if err != nil {
+				return err
+		}
+		defer file.Close()
 
-                _, err = file.WriteString(content)
-                return err
-        }
+		_, err = file.WriteString(content)
+		return err
+}
 
-        func exportToCSV(filename string, ipCountryCounter map[string]map[string]int, domainCounter map[string]int) error {
-                if err := ensureResultDirectory(); err != nil {
-                        return fmt.Errorf("failed to create result directory: %v", err)
-                }
+func exportToCSV(filename string, ipCountryCounter map[string]map[string]int, domainCounter map[string]int) error {
+		if err := ensureResultDirectory(); err != nil {
+				return fmt.Errorf("failed to create result directory: %v", err)
+		}
 
-                fullPath := filepath.Join("result", filename)
-                file, err := os.Create(fullPath)
-                if err != nil {
-                        return err
-                }
-                defer file.Close()
+		fullPath := filepath.Join("result", filename)
+		file, err := os.Create(fullPath)
+		if err != nil {
+				return err
+		}
+		defer file.Close()
 
-                writer := csv.NewWriter(file)
-                defer writer.Flush()
+		writer := csv.NewWriter(file)
+		defer writer.Flush()
 
-                // Write headers
-                writer.Write([]string{"Type", "Country", "IP/Domain", "Count"})
+		// Write headers
+		writer.Write([]string{"Type", "Country", "IP/Domain", "Count"})
 
-                // Write IP data
-                for country, ips := range ipCountryCounter {
-                        for ip, count := range ips {
-                                writer.Write([]string{"IP", country, ip, strconv.Itoa(count)})
-                        }
-                }
+		// Write IP data
+		for country, ips := range ipCountryCounter {
+				for ip, count := range ips {
+						writer.Write([]string{"IP", country, ip, strconv.Itoa(count)})
+				}
+		}
 
-                // Write Domain data
-                for domain, count := range domainCounter {
-                        writer.Write([]string{"Domain", "", domain, strconv.Itoa(count)})
-                }
+		// Write Domain data
+		for domain, count := range domainCounter {
+				writer.Write([]string{"Domain", "", domain, strconv.Itoa(count)})
+		}
 
-                return nil
-        }
+		return nil
+}
 
-        func encryptSensitiveData(data string) (string, error) {
-                if config.EncryptionKey == "" {
-                        return data, nil
-                }
+func encryptSensitiveData(data string) (string, error) {
+		if config.EncryptionKey == "" {
+				return data, nil
+		}
 
-                block, err := aes.NewCipher([]byte(config.EncryptionKey))
-                if err != nil {
-                        return "", err
-                }
+		block, err := aes.NewCipher([]byte(config.EncryptionKey))
+		if err != nil {
+				return "", err
+		}
 
-                gcm, err := cipher.NewGCM(block)
-                if err != nil {
-                        return "", err
-                }
+		gcm, err := cipher.NewGCM(block)
+		if err != nil {
+				return "", err
+		}
 
-                nonce := make([]byte, gcm.NonceSize())
-                if _, err = io.ReadFull(rand.Reader, nonce); err != nil {
-                        return "", err
-                }
+		nonce := make([]byte, gcm.NonceSize())
+		if _, err = io.ReadFull(rand.Reader, nonce); err != nil {
+				return "", err
+		}
 
-                ciphertext := gcm.Seal(nonce, nonce, []byte(data), nil)
-                return base64.StdEncoding.EncodeToString(ciphertext), nil
-        }
+		ciphertext := gcm.Seal(nonce, nonce, []byte(data), nil)
+		return base64.StdEncoding.EncodeToString(ciphertext), nil
+}
 
-        func main() {
-                endDatetime := getEndDatetime()
-                startDatetime := getStartDatetime(endDatetime)
+func main() {
+		endDatetime := getEndDatetime()
+		startDatetime := getStartDatetime(endDatetime)
 
-                log.Printf("Script will process messages from %v to %v", startDatetime, endDatetime)
-                log.Printf("Starting from the beginning: %v", config.StartFromBeginning)
+		log.Printf("Script will process messages from %v to %v", startDatetime, endDatetime)
+		log.Printf("Starting from the beginning: %v", config.StartFromBeginning)
 
-                defer geoIP.Close()
-                defer geoIPASN.Close()
-            ipCountryCounter, domainCounter, processedCount, skippedCount, totalDenied, firstMessage, lastMessage, consumeDuration, processDuration := processLogs(startDatetime, endDatetime)
+		defer geoIP.Close()
+		defer geoIPASN.Close()
+	ipCountryCounter, domainCounter, processedCount, skippedCount, totalDenied, firstMessage, lastMessage, consumeDuration, processDuration := processLogs(startDatetime, endDatetime)
 
-            summary := generateSummary(ipCountryCounter, domainCounter, processedCount, skippedCount, totalDenied, firstMessage, lastMessage, consumeDuration, processDuration)
-    
-                // Print summary to console
-                fmt.Print(summary)
+	summary := generateSummary(ipCountryCounter, domainCounter, processedCount, skippedCount, totalDenied, firstMessage, lastMessage, consumeDuration, processDuration)
 
-                // Save summary to file
-                outputFilename := fmt.Sprintf("log_analysis_summary_%s.txt", time.Now().Format("20060102_150405"))
-                err := saveOutputToFile(outputFilename, summary)
-                if err != nil {
-                        log.Printf("Failed to save summary to file: %v", err)
-                } else {
-                        log.Printf("Summary saved to result/%s", outputFilename)
-                }
+		// Print summary to console
+		fmt.Print(summary)
 
-                // Ask if user wants to export to CSV
-                fmt.Print("Export results to CSV? (y/n): ")
-                var exportCSV string
-                fmt.Scanln(&exportCSV)
-                if strings.ToLower(exportCSV) == "y" {
-                        csvFilename := fmt.Sprintf("log_analysis_%s.csv", time.Now().Format("20060102_150405"))
+		// Save summary to file
+		outputFilename := fmt.Sprintf("log_analysis_summary_%s.txt", time.Now().Format("20060102_150405"))
+		err := saveOutputToFile(outputFilename, summary)
+		if err != nil {
+				log.Printf("Failed to save summary to file: %v", err)
+		} else {
+				log.Printf("Summary saved to result/%s", outputFilename)
+		}
 
-                        // Encrypt sensitive data before exporting
-                        encryptedIPCountryCounter := make(map[string]map[string]int)
-                        for country, ips := range ipCountryCounter {
-                                encryptedIPCountryCounter[country] = make(map[string]int)
-                                for ip, count := range ips {
-                                        encryptedIP, err := encryptSensitiveData(ip)
-                                        if err != nil {
-                                                log.Printf("Failed to encrypt IP: %v", err)
-                                                encryptedIP = ip
-                                        }
-                                        encryptedIPCountryCounter[country][encryptedIP] = count
-                                }
-                        }
+		// Ask if user wants to export to CSV
+		fmt.Print("Export results to CSV? (y/n): ")
+		var exportCSV string
+		fmt.Scanln(&exportCSV)
+		if strings.ToLower(exportCSV) == "y" {
+				csvFilename := fmt.Sprintf("log_analysis_%s.csv", time.Now().Format("20060102_150405"))
 
-                        encryptedDomainCounter := make(map[string]int)
-                        for domain, count := range domainCounter {
-                                encryptedDomain, err := encryptSensitiveData(domain)
-                                if err != nil {
-                                        log.Printf("Failed to encrypt domain: %v", err)
-                                        encryptedDomain = domain
-                                }
-                                encryptedDomainCounter[encryptedDomain] = count
-                        }
+				// Encrypt sensitive data before exporting
+				encryptedIPCountryCounter := make(map[string]map[string]int)
+				for country, ips := range ipCountryCounter {
+						encryptedIPCountryCounter[country] = make(map[string]int)
+						for ip, count := range ips {
+								encryptedIP, err := encryptSensitiveData(ip)
+								if err != nil {
+										log.Printf("Failed to encrypt IP: %v", err)
+										encryptedIP = ip
+								}
+								encryptedIPCountryCounter[country][encryptedIP] = count
+						}
+				}
 
-                        err := exportToCSV(csvFilename, encryptedIPCountryCounter, encryptedDomainCounter)
-                        if err != nil {
-                                log.Printf("Failed to export to CSV: %v", err)
-                        } else {
-                                log.Printf("Results exported to result/%s", csvFilename)
-                        }
-                }
-        }
+				encryptedDomainCounter := make(map[string]int)
+				for domain, count := range domainCounter {
+						encryptedDomain, err := encryptSensitiveData(domain)
+						if err != nil {
+								log.Printf("Failed to encrypt domain: %v", err)
+								encryptedDomain = domain
+						}
+						encryptedDomainCounter[encryptedDomain] = count
+				}
+
+				err := exportToCSV(csvFilename, encryptedIPCountryCounter, encryptedDomainCounter)
+				if err != nil {
+						log.Printf("Failed to export to CSV: %v", err)
+				} else {
+						log.Printf("Results exported to result/%s", csvFilename)
+				}
+		}
+}
