@@ -6,6 +6,11 @@
 
 ---
 
+### [Summary of Functions](./1.funcSumm.md)
+  
+---
+### Go Build
+
 - [Go download](https://go.dev/dl/)
 ```
 cp k0100-client.properties-master k0100-client.properties
