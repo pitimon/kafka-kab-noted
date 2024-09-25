@@ -1,3 +1,4 @@
+- [Go download](https://go.dev/dl/)
 ```
 cp k0100-client.properties-master k0100-client.properties
 ```
