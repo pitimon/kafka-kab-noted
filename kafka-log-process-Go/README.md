@@ -7,7 +7,7 @@
 
 ---
 
->> [Summary of Functions](./1.funcSumm.md)
+>> [Summary of Functions](./details/1.funcSumm.md)
   
 ---
 ### Go Build
