@@ -30,5 +30,5 @@ go build -o kafka-log-processor
 
 ---
 
->> [ตัวอย่างการใช้งาน](./details/run_program.md)
->> [Results](./result/)
+- [ตัวอย่างการใช้งาน](./details/run_program.md)
+- [Results](./result/)
