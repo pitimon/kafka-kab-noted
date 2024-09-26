@@ -13,7 +13,6 @@ import (
 	"flag"
 	"fmt"
 	"io"
-	"io/ioutil"
 	"log"
 	"math"
 	"net"
@@ -138,7 +137,7 @@ func createTLSConfig(props *viper.Viper) (*tls.Config, error) {
 
 	certFile := props.GetString("ssl.truststore.location")
 	if certFile != "" {
-		caCert, err := ioutil.ReadFile(certFile)
+		caCert, err := os.ReadFile(certFile)
 		if err != nil {
 			return nil, fmt.Errorf("error reading SSL cert file: %v", err)
 		}
