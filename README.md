@@ -8,7 +8,11 @@
   
 ---
 - [1.ACL](./ACL-topic/1.ACL-k0100-test.md)
-- [2.usecase](./LogCentral-usercase/1.Create-Topic.md)
+- 2. usecase
+  - [2.1 create topic](./LogCentral-usercase/1.Create-Topic.md)
+    - [2.1.1 Topic customize](./Topic-mgmt/logCentral.md)
+  - [2.2 consume topic with python](./kafka-log-process-Python/)
+  - [2.3 consume topic with Go](./kafka-log-process-Go/)
 
 ---
 ```
