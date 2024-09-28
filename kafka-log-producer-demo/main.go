@@ -134,12 +134,11 @@ func processLines(lines <-chan string, producer sarama.AsyncProducer, wg *sync.W
 func updateProgress(totalLines *int64, processedLines *int64, doneChan <-chan bool) {
     var lastProcessed int64
     startTime := time.Now()
-    var lastProgressPercent float64
+    var lastProgressPercent float64 = -1  // เริ่มต้นที่ -1 เพื่อให้แน่ใจว่าจะแสดง 0%
     progressInterval := 10.0
-
     for {
         select {
-        case <-time.After(1 * time.Second):
+        case <-time.After(100 * time.Millisecond):  // ตรวจสอบบ่อยขึ้นเพื่อให้เห็น 0%
             total := atomic.LoadInt64(totalLines)
             processed := atomic.LoadInt64(processedLines)
             
@@ -147,7 +146,7 @@ func updateProgress(totalLines *int64, processedLines *int64, doneChan <-chan bo
                 progress := float64(processed) / float64(total) * 100
                 currentProgressPercent := math.Floor(progress/progressInterval) * progressInterval
 
-                if currentProgressPercent > lastProgressPercent {
+                if currentProgressPercent > lastProgressPercent || (processed == total && lastProgressPercent < 100) {
                     speed := float64(processed-lastProcessed) / time.Since(startTime).Seconds()
                     fmt.Printf("\nProgress: %.0f%% (%d/%d) - %.2f lines/sec", 
                         currentProgressPercent, processed, total, speed)
@@ -163,7 +162,8 @@ func updateProgress(totalLines *int64, processedLines *int64, doneChan <-chan bo
             processed := atomic.LoadInt64(processedLines)
             
             if total > 0 {
-                fmt.Printf("\nProgress: 100%% (%d/%d)\n", processed, total)
+                speed := float64(processed-lastProcessed) / time.Since(startTime).Seconds()
+                fmt.Printf("\nProgress: 100%% (%d/%d) - %.2f lines/sec\n", processed, total, speed)
             }
             
             fmt.Println("Processing complete")
