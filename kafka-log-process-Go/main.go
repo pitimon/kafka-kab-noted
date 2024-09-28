@@ -54,25 +54,29 @@ var (
 )
 
 // init initializes the application configuration and GeoIP databases
+// This function is automatically called before the main function
+// It sets up command-line flags, parses them, and initializes global variables
 func init() {
 	// Set up command-line flags
-	flag.StringVar(&config.KafkaPropertiesFile, "kafka-properties", "k0100-client.properties", "Kafka properties file")
-	flag.StringVar(&config.GeoIPDatabase, "geoip-db", "GeoLite2-Country.mmdb", "GeoIP database file")
-	flag.StringVar(&config.GeoIPASNDatabase, "geoip-asn-db", "GeoLite2-ASN.mmdb", "GeoIP ASN database file")
-	flag.StringVar(&config.EncryptionKey, "encryption-key", "", "Encryption key for sensitive data")
-	flag.BoolVar(&config.StartFromBeginning, "from-beginning", false, "Start from the beginning of the topic")
+	flag.StringVar(&config.KafkaPropertiesFile, "kafka-properties", "k0100-client.properties", "Path to the Kafka properties file")
+	flag.StringVar(&config.GeoIPDatabase, "geoip-db", "GeoLite2-Country.mmdb", "Path to the GeoIP country database file")
+	flag.StringVar(&config.GeoIPASNDatabase, "geoip-asn-db", "GeoLite2-ASN.mmdb", "Path to the GeoIP ASN database file")
+	flag.StringVar(&config.EncryptionKey, "encryption-key", "", "Key used for encrypting sensitive data in the output")
+	flag.BoolVar(&config.StartFromBeginning, "from-beginning", false, "If true, start reading from the beginning of the Kafka topic")
 
-	topicsFlag := flag.String("topics", "logCentral", "Comma-separated list of Kafka topics")
+	topicsFlag := flag.String("topics", "logCentral", "Comma-separated list of Kafka topics to consume from")
 
+	// Parse the command-line flags
 	flag.Parse()
 
+	// Split the topics string into a slice
 	config.Topics = strings.Split(*topicsFlag, ",")
 
 	// Open GeoIP databases
 	var err error
 	geoIP, err = geoip2.Open(config.GeoIPDatabase)
 	if err != nil {
-		log.Fatalf("Error opening GeoIP database: %v", err)
+		log.Fatalf("Error opening GeoIP country database: %v", err)
 	}
 
 	geoIPASN, err = geoip2.Open(config.GeoIPASNDatabase)
@@ -82,15 +86,30 @@ func init() {
 }
 
 // loadProperties loads Kafka properties from a file
+// Parameters:
+//   - filename: string, the path to the properties file
+// Returns:
+//   - *viper.Viper: a Viper configuration object containing the loaded properties
+//   - error: an error if the file couldn't be read or parsed
+// This function uses the Viper library to read and parse the properties file
 func loadProperties(filename string) (*viper.Viper, error) {
 	v := viper.New()
 	v.SetConfigFile(filename)
 	v.SetConfigType("properties")
 	err := v.ReadInConfig()
-	return v, err
+	if err != nil {
+		return nil, fmt.Errorf("failed to read config file: %v", err)
+	}
+	return v, nil
 }
 
 // extractIPAndDomain extracts IP and domain from a log entry
+// Parameters:
+//   - logEntry: string, the log entry to parse
+// Returns:
+//   - string: the extracted IP address, or an empty string if not found
+//   - string: the extracted domain name, or an empty string if not found
+// This function uses regular expressions to find IP addresses and domain names in the log entry
 func extractIPAndDomain(logEntry string) (string, string) {
 	ipPattern := `\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3}`
 	domainPattern := `\(([^)]+)\)`
@@ -110,6 +129,12 @@ func extractIPAndDomain(logEntry string) (string, string) {
 }
 
 // getCountryAndASNFromIP retrieves country and ASN information for an IP address
+// Parameters:
+//   - ipStr: string, the IP address to look up
+// Returns:
+//   - string: the country name associated with the IP address, or "Unknown" if not found
+//   - uint: the Autonomous System Number (ASN) associated with the IP address, or 0 if not found
+// This function uses the GeoIP2 databases to look up geographical and network information
 func getCountryAndASNFromIP(ipStr string) (string, uint) {
 	ip := net.ParseIP(ipStr)
 	if ip == nil {
@@ -118,11 +143,13 @@ func getCountryAndASNFromIP(ipStr string) (string, uint) {
 
 	record, err := geoIP.Country(ip)
 	if err != nil {
+		log.Printf("Error looking up country for IP %s: %v", ipStr, err)
 		return "Unknown", 0
 	}
 
 	asnRecord, err := geoIPASN.ASN(ip)
 	if err != nil {
+		log.Printf("Error looking up ASN for IP %s: %v", ipStr, err)
 		return record.Country.Names["en"], 0
 	}
 
@@ -130,9 +157,15 @@ func getCountryAndASNFromIP(ipStr string) (string, uint) {
 }
 
 // createTLSConfig creates a TLS configuration for Kafka
+// Parameters:
+//   - props: *viper.Viper, a Viper configuration object containing Kafka properties
+// Returns:
+//   - *tls.Config: a TLS configuration object
+//   - error: an error if the TLS configuration couldn't be created
+// This function sets up TLS for secure communication with Kafka
 func createTLSConfig(props *viper.Viper) (*tls.Config, error) {
 	tlsConfig := &tls.Config{
-		InsecureSkipVerify: true, // Use caution with this setting in production
+		InsecureSkipVerify: true, // Note: Use caution with this setting in production
 	}
 
 	certFile := props.GetString("ssl.truststore.location")
@@ -153,6 +186,12 @@ func createTLSConfig(props *viper.Viper) (*tls.Config, error) {
 }
 
 // createKafkaConsumer creates a Kafka consumer
+// Parameters:
+//   - propertiesFile: string, the path to the Kafka properties file
+// Returns:
+//   - sarama.Consumer: a Sarama Kafka consumer object
+//   - error: an error if the consumer couldn't be created
+// This function sets up and configures a Kafka consumer based on the provided properties
 func createKafkaConsumer(propertiesFile string) (sarama.Consumer, error) {
 	props, err := loadProperties(propertiesFile)
 	if err != nil {
@@ -196,6 +235,12 @@ func createKafkaConsumer(propertiesFile string) (sarama.Consumer, error) {
 }
 
 // processMessage processes a single Kafka message
+// Parameters:
+//   - rawMessage: []byte, the raw message data from Kafka
+// Returns:
+//   - *LogMessage: a pointer to a LogMessage struct containing the parsed message data
+//   - error: an error if the message couldn't be processed
+// This function parses the JSON data in the message and performs some basic validations
 func processMessage(rawMessage []byte) (*LogMessage, error) {
 	var logMessage LogMessage
 	err := json.Unmarshal(rawMessage, &logMessage)
@@ -215,12 +260,23 @@ func processMessage(rawMessage []byte) (*LogMessage, error) {
 }
 
 // timestampToDatetime converts a timestamp to a datetime
+// Parameters:
+//   - timestamp: float64, the timestamp to convert
+// Returns:
+//   - time.Time: a Time object representing the timestamp
+// This function converts a Unix timestamp (with fractional seconds) to a Go time.Time object
 func timestampToDatetime(timestamp float64) time.Time {
 	sec, dec := math.Modf(timestamp)
 	return time.Unix(int64(sec), int64(dec*(1e9))).In(time.Local)
 }
 
 // getStartDatetime prompts the user to choose a start time
+// Parameters:
+//   - endDatetime: time.Time, the end time of the log analysis period
+// Returns:
+//   - time.Time: the chosen start time
+//   - bool: true if the user chose to start from the beginning of available data, false otherwise
+// This function interactively prompts the user to choose a start time for log analysis
 func getStartDatetime(endDatetime time.Time) (time.Time, bool) {
 	reader := bufio.NewReader(os.Stdin)
 	for {
@@ -271,6 +327,9 @@ func getStartDatetime(endDatetime time.Time) (time.Time, bool) {
 }
 
 // getEndDatetime prompts the user to choose an end time
+// Returns:
+//   - time.Time: the chosen end time
+// This function interactively prompts the user to choose an end time for log analysis
 func getEndDatetime() time.Time {
 	reader := bufio.NewReader(os.Stdin)
 	for {
@@ -300,6 +359,20 @@ func getEndDatetime() time.Time {
 }
 
 // processLogs processes log messages from Kafka
+// Parameters:
+//   - startDatetime: time.Time, the start time for log processing
+//   - endDatetime: time.Time, the end time for log processing
+// Returns:
+//   - map[string]map[string]int: a nested map of countries and their IP counts
+//   - map[string]int: a map of domain counts
+//   - int: total number of processed messages
+//   - int: total number of skipped messages
+//   - int: total number of denied queries
+//   - *LogMessage: pointer to the first processed message
+//   - *LogMessage: pointer to the last processed message
+//   - time.Duration: duration of message consumption
+//   - time.Duration: duration of message processing
+// This function is the core of the log processing logic, consuming messages from Kafka and analyzing them
 func processLogs(startDatetime, endDatetime time.Time) (map[string]map[string]int, map[string]int, int, int, int, *LogMessage, *LogMessage, time.Duration, time.Duration) {
 	consumeStartTime := time.Now()
 
@@ -457,6 +530,19 @@ func processLogs(startDatetime, endDatetime time.Time) (map[string]map[string]in
 }
 
 // generateSummary generates a summary of the processed logs
+// Parameters:
+//   - ipCountryCounter: map[string]map[string]int, a nested map of countries and their IP counts
+//   - domainCounter: map[string]int, a map of domain counts
+//   - processedCount: int, total number of processed messages
+//   - skippedCount: int, total number of skipped messages
+//   - totalDenied: int, total number of denied queries
+//   - firstMessage: *LogMessage, pointer to the first processed message
+//   - lastMessage: *LogMessage, pointer to the last processed message
+//   - consumeDuration: time.Duration, duration of message consumption
+//   - processDuration: time.Duration, duration of message processing
+// Returns:
+//   - string: a formatted summary of the log analysis
+// This function generates a human-readable summary of the log analysis results
 func generateSummary(ipCountryCounter map[string]map[string]int, domainCounter map[string]int, processedCount, skippedCount, totalDenied int, firstMessage, lastMessage *LogMessage, consumeDuration, processDuration time.Duration) string {
 	var output strings.Builder
 
@@ -489,6 +575,12 @@ func generateSummary(ipCountryCounter map[string]map[string]int, domainCounter m
 }
 
 // getTopCountries returns the top N countries with the most denied IPs
+// Parameters:
+//   - ipCountryCounter: map[string]map[string]int, a nested map of countries and their IP counts
+//   - n: int, the number of top countries to return
+// Returns:
+//   - string: a formatted string containing the top N countries and their denied IP counts
+// This function sorts countries by their total denied IP count and returns the top N
 func getTopCountries(ipCountryCounter map[string]map[string]int, n int) string {
 	var output strings.Builder
 	type kv struct {
@@ -516,6 +608,12 @@ func getTopCountries(ipCountryCounter map[string]map[string]int, n int) string {
 }
 
 // getTopN returns the top N items from a map
+// Parameters:
+//   - counter: map[string]int, a map of items and their counts
+//   - n: int, the number of top items to return
+// Returns:
+//   - string: a formatted string containing the top N items and their counts
+// This function sorts items by their count and returns the top N
 func getTopN(counter map[string]int, n int) string {
 	var output strings.Builder
 	type kv struct {
@@ -539,6 +637,9 @@ func getTopN(counter map[string]int, n int) string {
 }
 
 // ensureResultDirectory ensures that the result directory exists
+// Returns:
+//   - error: an error if the directory couldn't be created, nil otherwise
+// This function creates the 'result' directory if it doesn't exist
 func ensureResultDirectory() error {
 	if _, err := os.Stat("result"); os.IsNotExist(err) {
 		return os.Mkdir("result", 0755)
@@ -547,6 +648,12 @@ func ensureResultDirectory() error {
 }
 
 // saveOutputToFile saves the output to a file
+// Parameters:
+//   - filename: string, the name of the file to save the output to
+//   - content: string, the content to be saved
+// Returns:
+//   - error: an error if the file couldn't be created or written to, nil otherwise
+// This function saves the given content to a file in the 'result' directory
 func saveOutputToFile(filename string, content string) error {
 	if err := ensureResultDirectory(); err != nil {
 		return fmt.Errorf("failed to create result directory: %v", err)
@@ -564,6 +671,13 @@ func saveOutputToFile(filename string, content string) error {
 }
 
 // exportToCSV exports the results to a CSV file
+// Parameters:
+//   - filename: string, the name of the CSV file to create
+//   - ipCountryCounter: map[string]map[string]int, a nested map of countries and their IP counts
+//   - domainCounter: map[string]int, a map of domain counts
+// Returns:
+//   - error: an error if the CSV file couldn't be created or written to, nil otherwise
+// This function exports the analysis results to a CSV file in the 'result' directory
 func exportToCSV(filename string, ipCountryCounter map[string]map[string]int, domainCounter map[string]int) error {
 	if err := ensureResultDirectory(); err != nil {
 		return fmt.Errorf("failed to create result directory: %v", err)
@@ -598,30 +712,38 @@ func exportToCSV(filename string, ipCountryCounter map[string]map[string]int, do
 }
 
 // encryptSensitiveData encrypts sensitive data using AES encryption
+// Parameters:
+//   - data: string, the data to be encrypted
+// Returns:
+//   - string: the encrypted data as a base64-encoded string
+//   - error: an error if encryption failed, nil otherwise
+// This function encrypts the given data using AES encryption with the provided encryption key
 func encryptSensitiveData(data string) (string, error) {
-	if config.EncryptionKey == "" {
-		return data, nil
-	}
+    if config.EncryptionKey == "" {
+        return data, nil
+    }
 
-	block, err := aes.NewCipher([]byte(config.EncryptionKey))
-	if err != nil {
-		return "", err
-	}
+    block, err := aes.NewCipher([]byte(config.EncryptionKey))
+    if err != nil {
+        return "", fmt.Errorf("failed to create AES cipher: %v", err)
+    }
 
-	gcm, err := cipher.NewGCM(block)
-	if err != nil {
-		return "", err
-	}
+    gcm, err := cipher.NewGCM(block)
+    if err != nil {
+        return "", fmt.Errorf("failed to create GCM: %v", err)
+    }
 
-	nonce := make([]byte, gcm.NonceSize())
-	if _, err = io.ReadFull(rand.Reader, nonce); err != nil {
-		return "", err
-	}
+    nonce := make([]byte, gcm.NonceSize())
+    if _, err = io.ReadFull(rand.Reader, nonce); err != nil {
+        return "", fmt.Errorf("failed to generate nonce: %v", err)
+    }
 
-	ciphertext := gcm.Seal(nonce, nonce, []byte(data), nil)
-	return base64.StdEncoding.EncodeToString(ciphertext), nil
+    ciphertext := gcm.Seal(nonce, nonce, []byte(data), nil)
+    return base64.StdEncoding.EncodeToString(ciphertext), nil
 }
 
+// main is the entry point of the application
+// This function orchestrates the entire log analysis process
 func main() {
 	// Get end datetime from user input
 	endDatetime := getEndDatetime()
