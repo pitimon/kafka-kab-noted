@@ -1,0 +1,11 @@
+bootstrap.servers=kafka.ipv9.me:9092,kafka.ipv9.me:9093,kafka.ipv9.me:9094
+security.protocol=SASL_SSL
+sasl.mechanism=PLAIN
+sasl.jaas.config=org.apache.kafka.common.security.plain.PlainLoginModule required username="[Change it's username]" password="[Change it's password]";
+ssl.truststore.location=./kafka.truststore.jks
+ssl.truststore.password=[Change it's keystore password]
+ssl.endpoint.identification.algorithm=
+ssl.protocol=TLSv1.3
+ssl.enabled.protocols=TLSv1.2,TLSv1.3
+
+
