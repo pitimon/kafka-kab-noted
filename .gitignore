@@ -24,5 +24,5 @@ hs_err_pid*
 replay_pid*
 
 user-properties/*
-bind9-secLog-demo/log-consumer-Go-bind9/k0100-client.properties
+bind9-secLog-demo/log-consumer-Go/k0100-client.properties
 kafka-log-process-Go/kafka-log-processor
