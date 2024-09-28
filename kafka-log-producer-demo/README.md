@@ -125,3 +125,5 @@ Finished processing files
 Progress: 100% (245062297/245062297) - 635758.49 lines/sec
 Processing complete
 ```
+
+---
