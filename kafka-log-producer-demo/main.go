@@ -13,6 +13,7 @@ import (
 	"sync"
 	"sync/atomic"
 	"time"
+	"math"
 
 	"github.com/IBM/sarama"
 )
@@ -24,6 +25,7 @@ var (
 	batchSize           = 1000
 )
 
+// kafkaConfig เก็บการตั้งค่าการเชื่อมต่อ Kafka
 type kafkaConfig struct {
 	BootstrapServers string
 	SecurityProtocol string
@@ -132,19 +134,25 @@ func processLines(lines <-chan string, producer sarama.AsyncProducer, wg *sync.W
 func updateProgress(totalLines *int64, processedLines *int64, doneChan <-chan bool) {
     var lastProcessed int64
     startTime := time.Now()
+    var lastProgressPercent float64
+    progressInterval := 10.0
 
     for {
         select {
-        case <-time.After(1 * time.Second):  // อัพเดททุก 1 วินาที
+        case <-time.After(1 * time.Second):
             total := atomic.LoadInt64(totalLines)
             processed := atomic.LoadInt64(processedLines)
             
             if total > 0 {
                 progress := float64(processed) / float64(total) * 100
-                speed := float64(processed - lastProcessed) / time.Since(startTime).Seconds()
-                
-                fmt.Printf("\rProgress: %.2f%% (%d/%d) - %.2f lines/sec", 
-                    progress, processed, total, speed)
+                currentProgressPercent := math.Floor(progress/progressInterval) * progressInterval
+
+                if currentProgressPercent > lastProgressPercent {
+                    speed := float64(processed-lastProcessed) / time.Since(startTime).Seconds()
+                    fmt.Printf("\nProgress: %.0f%% (%d/%d) - %.2f lines/sec", 
+                        currentProgressPercent, processed, total, speed)
+                    lastProgressPercent = currentProgressPercent
+                }
             }
             
             lastProcessed = processed
@@ -155,8 +163,7 @@ func updateProgress(totalLines *int64, processedLines *int64, doneChan <-chan bo
             processed := atomic.LoadInt64(processedLines)
             
             if total > 0 {
-                progress := float64(processed) / float64(total) * 100
-                fmt.Printf("\rProgress: 100.00%% (%d/%d)\n", total, total)
+                fmt.Printf("\nProgress: 100%% (%d/%d)\n", processed, total)
             }
             
             fmt.Println("Processing complete")
@@ -218,19 +225,21 @@ func getLogFiles(logFilePath string) ([]string, error) {
 // คืนค่า:
 //   - error: ข้อผิดพลาดที่เกิดขึ้นระหว่างการประมวลผลไฟล์
 func processFile(filePath string, producer sarama.AsyncProducer, totalLines, processedLines *int64, linesChan chan<- string) error {
-	file, err := os.Open(filePath)
-	if err != nil {
-		return err
-	}
-	defer file.Close()
+    file, err := os.Open(filePath)
+    if err != nil {
+        return err
+    }
+    defer file.Close()
 
-	scanner := bufio.NewScanner(file)
-	for scanner.Scan() {
-		linesChan <- scanner.Text()
-		atomic.AddInt64(totalLines, 1)
-	}
+    scanner := bufio.NewScanner(file)
+    var localTotal int64
+    for scanner.Scan() {
+        linesChan <- scanner.Text()
+        localTotal++
+    }
+    atomic.AddInt64(totalLines, localTotal)
 
-	return scanner.Err()
+    return scanner.Err()
 }
 
 // main เป็นจุดเริ่มต้นของโปรแกรม
@@ -241,14 +250,12 @@ func processFile(filePath string, producer sarama.AsyncProducer, totalLines, pro
 // - การจัดการ goroutines สำหรับการประมวลผลแบบพร้อมกัน
 // - การแสดงความคืบหน้าและการจัดการข้อผิดพลาด
 func main() {
-	// Get user input
 	kafkaPropertiesFile = getUserInput("Enter Kafka properties file", kafkaPropertiesFile)
 	kafkaTopic = getUserInput("Enter Kafka topic", kafkaTopic)
 	logFile = getUserInput("Enter log file or pattern", logFile)
 	batchSizeStr := getUserInput("Enter batch size", strconv.Itoa(batchSize))
 	batchSize, _ = strconv.Atoi(batchSizeStr)
 
-	// Check Kafka properties file
 	if err := checkFile(kafkaPropertiesFile); err != nil {
 		log.Fatalf("Invalid Kafka properties file: %v", err)
 	}
@@ -284,22 +291,26 @@ func main() {
 
 	go updateProgress(&totalLines, &processedLines, doneChan)
 
-	for _, file := range logFiles {
-		if err := processFile(file, producer, &totalLines, &processedLines, linesChan); err != nil {
-			log.Printf("Error processing file %s: %v", file, err)
-		}
-	}
-	close(linesChan)
+    var fileWg sync.WaitGroup
+    for _, file := range logFiles {
+        fileWg.Add(1)
+        go func(f string) {
+            defer fileWg.Done()
+            if err := processFile(f, producer, &totalLines, &processedLines, linesChan); err != nil {
+                log.Printf("Error processing file %s: %v", f, err)
+            }
+        }(file)
+    }
+    fileWg.Wait()
+    close(linesChan)
 
 	wg.Wait()
 	doneChan <- true
 
 	fmt.Printf("Finished processing files\n")
 
-	// Wait for any buffered messages to be processed
 	producer.AsyncClose()
 
-	// Handle any errors from the producer
 	for err := range producer.Errors() {
 		log.Printf("Failed to send message: %v\n", err)
 	}
