@@ -98,7 +98,20 @@
 This algorithm is designed for high efficiency using concurrent processing and efficient memory management. The use of AsyncProducer and worker pool allows for fast processing of large files and sending data to Kafka. Simultaneously, it includes error handling and progress reporting to allow users to monitor the processing status.
 
 ---
-## excute program
+### sample data
+```
+du -hs /eduroam/kafka-log/eduroam-nro.log
+```
+```result
+31G     /eduroam/kafka-log/eduroam-nro.log
+```
+```
+wc -l /eduroam/kafka-log/eduroam-nro.log
+```
+```result
+245062297 /eduroam/kafka-log/eduroam-nro.log
+```
+## run program
 ```
 $ ./eduroam-2-kafka 
 ```
