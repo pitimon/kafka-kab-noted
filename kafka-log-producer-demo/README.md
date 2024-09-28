@@ -100,5 +100,15 @@ This algorithm is designed for high efficiency using concurrent processing and e
 ---
 ## excute program
 ```
+$ ./eduroam-2-kafka 
+```
+```result
+Enter Kafka properties file (default: client.properties): 
+Enter Kafka topic (default: eduroam-log): 
+Enter log file or pattern (default: /eduroam/kafka-log/eduroam-nro.log): 
+Enter batch size (default: 1000): 10000
+Finished processing files
 
+Progress: 100% (245062297/245062297) - 635758.49 lines/sec
+Processing complete
 ```
