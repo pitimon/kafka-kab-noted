@@ -25,4 +25,4 @@ replay_pid*
 
 user-properties/*
 bind9-secLog-demo/log-consumer-Go/k0100-client.properties
-kafka-log-process-Go/kafka-log-processor
+bind9-secLog-demo/log-consumer-Go/kafka-log-processor
