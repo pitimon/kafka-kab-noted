@@ -1,0 +1,105 @@
+@startuml
+|User|
+start
+:Select End Time;
+:Select Start Time;
+
+|#AntiqueWhite|Kafka Log Processor|
+:Load Kafka Properties;
+:Configure Kafka Consumer;
+note right
+  - Set SASL authentication
+  - Configure TLS if needed
+  - Set consumer group ID
+  - Set auto offset reset
+end note
+:Create Kafka Consumer;
+
+:Get Topics from Configuration;
+:Get Partitions for Topics;
+note right
+  For each topic:
+  - Retrieve list of partitions
+  - Store partition information
+end note
+
+fork
+  |#LightBlue|Goroutine 1|
+  :Consume Messages from Partition 1;
+  while (More messages?) is (yes)
+    :Parse Log Message;
+    :Unmarshal JSON to LogMessage struct;
+    if (Valid file_name?) then (yes)
+      if (Valid timestamp?) then (yes)
+        if (Timestamp within range?) then (yes)
+          :Extract IP and Domain;
+          :Lookup Geolocation;
+          :Update Shared Counters;
+        else (no)
+          :Skip Message;
+        endif
+      else (no)
+        :Skip Message;
+      endif
+    else (no)
+      :Skip Message;
+    endif
+  endwhile (no)
+  
+  |#LightGreen|Goroutine 2|
+  :Consume Messages from Partition 2;
+  while (More messages?) is (yes)
+    :Parse Log Message;
+    :Unmarshal JSON to LogMessage struct;
+    if (Valid file_name?) then (yes)
+      if (Valid timestamp?) then (yes)
+        if (Timestamp within range?) then (yes)
+          :Extract IP and Domain;
+          :Lookup Geolocation;
+          :Update Shared Counters;
+        else (no)
+          :Skip Message;
+        endif
+      else (no)
+        :Skip Message;
+      endif
+    else (no)
+      :Skip Message;
+    endif
+  endwhile (no)
+  
+  |#LightCoral|Goroutine N|
+  :Consume Messages from Partition N;
+  while (More messages?) is (yes)
+    :Parse Log Message;
+    :Unmarshal JSON to LogMessage struct;
+    if (Valid file_name?) then (yes)
+      if (Valid timestamp?) then (yes)
+        if (Timestamp within range?) then (yes)
+          :Extract IP and Domain;
+          :Lookup Geolocation;
+          :Update Shared Counters;
+        else (no)
+          :Skip Message;
+        endif
+      else (no)
+        :Skip Message;
+      endif
+    else (no)
+      :Skip Message;
+    endif
+  endwhile (no)
+end fork
+
+|#AntiqueWhite|Kafka Log Processor|
+:Synchronize Results;
+:Generate Summary;
+:Export to CSV;
+:Save Summary to File;
+:Encrypt Sensitive Data;
+
+|User|
+:View Results;
+stop
+
+@enduml

@@ -1,0 +1,92 @@
+@startuml
+actor User
+participant "Kafka Log Processor" as KLP
+participant "Kafka Consumer" as KC
+participant "Goroutine 1" as G1
+participant "Goroutine 2" as G2
+participant "Goroutine N" as GN
+database "Kafka Cluster" as Kafka
+database "GeoIP Database" as GeoIP
+
+User -> KLP : Select End Time
+User -> KLP : Select Start Time
+activate KLP
+
+KLP -> KC : Create Kafka Consumer
+activate KC
+KC --> KLP : Consumer Created
+deactivate KC
+
+KLP -> KC : Get Partitions for Topics
+activate KC
+KC --> KLP : Partitions List
+deactivate KC
+
+KLP -> G1 : Create Goroutine (Partition 1)
+activate G1
+KLP -> G2 : Create Goroutine (Partition 2)
+activate G2
+KLP -> GN : Create Goroutine (Partition N)
+activate GN
+
+par Consume and Process Messages
+    G1 -> Kafka : Consume Messages (Partition 1)
+    activate Kafka
+    Kafka --> G1 : Messages
+    deactivate Kafka
+    loop For each message
+        G1 -> G1 : Parse Log Message
+        G1 -> G1 : Extract IP and Domain
+        G1 -> GeoIP : Lookup Geolocation
+        activate GeoIP
+        GeoIP --> G1 : Geolocation Data
+        deactivate GeoIP
+        G1 -> G1 : Update Shared Counters
+    end
+
+    G2 -> Kafka : Consume Messages (Partition 2)
+    activate Kafka
+    Kafka --> G2 : Messages
+    deactivate Kafka
+    loop For each message
+        G2 -> G2 : Parse Log Message
+        G2 -> G2 : Extract IP and Domain
+        G2 -> GeoIP : Lookup Geolocation
+        activate GeoIP
+        GeoIP --> G2 : Geolocation Data
+        deactivate GeoIP
+        G2 -> G2 : Update Shared Counters
+    end
+
+    GN -> Kafka : Consume Messages (Partition N)
+    activate Kafka
+    Kafka --> GN : Messages
+    deactivate Kafka
+    loop For each message
+        GN -> GN : Parse Log Message
+        GN -> GN : Extract IP and Domain
+        GN -> GeoIP : Lookup Geolocation
+        activate GeoIP
+        GeoIP --> GN : Geolocation Data
+        deactivate GeoIP
+        GN -> GN : Update Shared Counters
+    end
+end
+
+G1 --> KLP : Processing Complete
+deactivate G1
+G2 --> KLP : Processing Complete
+deactivate G2
+GN --> KLP : Processing Complete
+deactivate GN
+
+KLP -> KLP : Synchronize Results
+KLP -> KLP : Generate Summary
+KLP -> KLP : Export to CSV
+KLP -> KLP : Save Summary to File
+KLP -> KLP : Encrypt Sensitive Data
+
+KLP --> User : Display Results
+deactivate KLP
+
+@enduml

@@ -1,0 +1,62 @@
+@startuml
+skinparam classAttributeIconSize 0
+
+class KafkaLogProcessor {
+  - config: Config
+  - consumer: sarama.Consumer
+  - geoIP: *geoip2.Reader
+  - geoIPASN: *geoip2.Reader
+  + processLogs(startDatetime: time.Time, endDatetime: time.Time): (map[string]map[string]int, map[string]int, int, int, int, *LogMessage, *LogMessage, time.Duration, time.Duration)
+  - createKafkaConsumer(): sarama.Consumer
+  - consumePartition(topic: string, partition: int32, resultChan: chan<- struct{...})
+  - processMessage(rawMessage: []byte): *LogMessage
+  - extractIPAndDomain(logEntry: string): (string, string)
+  - getCountryAndASNFromIP(ipStr: string): (string, uint)
+  - generateSummary(...): string
+  - exportToCSV(filename: string, ipCountryCounter: map[string]map[string]int, domainCounter: map[string]int): error
+  - encryptSensitiveData(data: string): (string, error)
+}
+
+class Config {
+  + KafkaPropertiesFile: string
+  + GeoIPDatabase: string
+  + GeoIPASNDatabase: string
+  + Topics: []string
+  + StartFromBeginning: bool
+  + EncryptionKey: string
+}
+
+class LogMessage {
+  + FileName: string
+  + Content: string
+  + Timestamp: float64
+}
+
+class "sarama.Consumer" {
+  + ConsumePartition(topic: string, partition: int32, offset: int64): (sarama.PartitionConsumer, error)
+  + Partitions(topic: string): ([]int32, error)
+  + Close() error
+}
+
+class "geoip2.Reader" {
+  + Country(ip: net.IP): (*geoip2.Country, error)
+  + ASN(ip: net.IP): (*geoip2.ASN, error)
+  + Close() error
+}
+
+KafkaLogProcessor *-- Config
+KafkaLogProcessor *-- "sarama.Consumer"
+KafkaLogProcessor *-- "geoip2.Reader"
+KafkaLogProcessor ..> LogMessage
+
+note right of KafkaLogProcessor::processLogs
+  This method orchestrates the entire log processing workflow,
+  including creating goroutines for each partition.
+end note
+
+note right of KafkaLogProcessor::consumePartition
+  This method is run as a goroutine for each partition,
+  consuming and processing messages concurrently.
+end note
+
+@enduml

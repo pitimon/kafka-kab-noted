@@ -1,0 +1,71 @@
+@startuml
+left to right direction
+actor User
+actor "Kafka Cluster" as Kafka
+actor "GeoLite Database" as GeoLite
+
+rectangle "Kafka Log Processor" {
+  usecase "Select End Time" as UC1
+  usecase "Select Start Time" as UC2
+  usecase "Process Logs" as UC3
+  usecase "Create Kafka Consumer" as UC3_1
+  usecase "Get Partitions for Topics" as UC3_2
+  usecase "Create Goroutines for Partitions" as UC3_3
+  usecase "Consume Kafka Messages" as UC3_4
+  usecase "Parse Log Messages" as UC3_5
+  usecase "Unmarshal JSON" as UC3_5_1
+  usecase "Validate Log Structure" as UC3_5_2
+  usecase "Check Timestamp" as UC3_5_3
+  usecase "Extract IP and Domain" as UC3_6
+  usecase "Lookup Geolocation" as UC3_7
+  usecase "Query GeoIP Database" as UC3_7_1
+  usecase "Query GeoIP ASN Database" as UC3_7_2
+  usecase "Handle Database Errors" as UC3_7_3
+  usecase "Update Shared Counters" as UC3_8
+  usecase "Synchronize Results" as UC3_9
+  usecase "Generate Summary" as UC4
+  usecase "Export to CSV" as UC5
+  usecase "Save Summary to File" as UC6
+  usecase "Encrypt Sensitive Data" as UC7
+}
+
+User --> UC1
+User --> UC2
+UC1 ..> UC2 : includes
+UC2 ..> UC3 : includes
+UC3 ..> UC3_1 : includes
+UC3_1 ..> UC3_2 : includes
+UC3_2 ..> UC3_3 : includes
+UC3_3 ..> UC3_4 : includes
+UC3_4 ..> UC3_5 : includes
+UC3_5 ..> UC3_5_1 : includes
+UC3_5 ..> UC3_5_2 : includes
+UC3_5 ..> UC3_5_3 : includes
+UC3_5 ..> UC3_6 : includes
+UC3_6 ..> UC3_7 : includes
+UC3_7 ..> UC3_7_1 : includes
+UC3_7 ..> UC3_7_2 : includes
+UC3_7 ..> UC3_7_3 : includes
+UC3_7 ..> UC3_8 : includes
+UC3_3 ..> UC3_9 : includes
+UC3_9 ..> UC4 : includes
+UC4 ..> UC5 : includes
+UC4 ..> UC6 : includes
+UC5 ..> UC7 : includes
+
+Kafka --> UC3_4 : provides messages
+GeoLite --> UC3_7 : provides geolocation data
+
+note right of UC3_1 : Configure and create Kafka consumer
+note right of UC3_2 : Get list of partitions for each topic
+note right of UC3_3 : Create a goroutine for each partition
+note right of UC3_4 : Each goroutine consumes messages from its assigned partition
+note right of UC3_5_1 : Convert JSON string to LogMessage struct
+note right of UC3_5_2 : Ensure required fields are present
+note right of UC3_5_3 : Verify timestamp is within specified range
+note right of UC3_7_1 : Query GeoIP database for country information
+note right of UC3_7_2 : Query GeoIP ASN database for ASN information
+note right of UC3_7_3 : Handle and log any database query errors
+note right of UC3_8 : Use mutex to safely update shared counters
+note right of UC3_9 : Wait for all goroutines to finish and combine results
+@enduml
