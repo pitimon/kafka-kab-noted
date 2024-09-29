@@ -107,11 +107,45 @@ $ wc -l /eduroam/kafka-log/eduroam-nro.log
 $ date ; ./eduroam-2-kafka ; date
 ```
 ```result
+Sun Sep 29 08:18:57 AM +07 2024
+Enter Kafka properties file (default: client.properties): 
+Enter Kafka topic (default: eduroam-log): eduroam-log-2020
+Enter log file or pattern (default: /eduroam/kafka-log/eduroam-nro.log): 
+Enter batch size (default: 1000): 10000
 
+Progress: 90% (91444134/91450876) - 511942.80 lines/secFinished processing files
+
+Progress: 100% (91450876/91450876) - 120113.45 lines/sec
+Processing complete
+Sun Sep 29 08:30:34 AM +07 2024
 ```
 ---
 > log's 2019
 ```
+$ ls -l /eduroam/kafka-log/eduroam-nro.log 
+-rw-r--r-- 1 root root 18168949937 Sep 29 08:37 /eduroam/kafka-log/eduroam-nro.log
+```
+```
+$ du -hs /eduroam/kafka-log/eduroam-nro.log 
+17G     /eduroam/kafka-log/eduroam-nro.log
+```
+```
+$ wc -l /eduroam/kafka-log/eduroam-nro.log 
+134233424 /eduroam/kafka-log/eduroam-nro.log
+```
+```
+$ date ; ./eduroam-2-kafka ; date
+```
+```result
+Sun Sep 29 08:38:59 AM +07 2024
+Enter Kafka properties file (default: client.properties): 
+Enter Kafka topic (default: eduroam-log): eduroam-log-2019
+Enter log file or pattern (default: /eduroam/kafka-log/eduroam-nro.log): 
+Enter batch size (default: 1000): 10000
+Finished processing files
 
+Progress: 100% (134233424/134233424) - 217702.04 lines/sec
+Processing complete
+Sun Sep 29 08:55:05 AM +07 2024
 ```
 ---
