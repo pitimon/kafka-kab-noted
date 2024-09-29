@@ -176,6 +176,14 @@ func getCountryAndASNFromIP(ipStr string) (string, uint) {
 	return record.Country.Names["en"], asnRecord.AutonomousSystemNumber
 }
 
+// createTLSConfig creates a TLS configuration based on the provided properties.
+//
+// Parameters:
+//   - props: *viper.Viper, a Viper configuration object containing TLS properties.
+//
+// Returns:
+//   - *tls.Config: a TLS configuration object.
+//   - error: an error if the TLS configuration couldn't be created.
 func createTLSConfig(props *viper.Viper) (*tls.Config, error) {
 	tlsConfig := &tls.Config{
 		InsecureSkipVerify: true, // Note: Use caution with this setting in production
@@ -248,6 +256,14 @@ func createKafkaConsumer(propertiesFile string) (sarama.Consumer, error) {
 	return sarama.NewConsumer(brokers, kafkaConfig)
 }
 
+// processMessage processes a raw message from Kafka and validates its contents.
+//
+// Parameters:
+//   - rawMessage: a byte slice representing the raw message data from Kafka.
+//
+// Returns:
+//   - *LogMessage: a pointer to a LogMessage struct containing the parsed message data.
+//   - error: an error if the message couldn't be processed.
 func processMessage(rawMessage []byte) (*LogMessage, error) {
 	var logMessage LogMessage
 	err := json.Unmarshal(rawMessage, &logMessage)
@@ -271,6 +287,10 @@ func timestampToDatetime(timestamp float64) time.Time {
 	return time.Unix(int64(sec), int64(dec*(1e9))).In(time.Local)
 }
 
+// getStartDatetime prompts the user to select a start time option and returns the corresponding start datetime and a boolean indicating whether to start from the beginning.
+//
+// endDatetime is the end datetime to calculate the start datetime from.
+// Returns the start datetime and a boolean indicating whether to start from the beginning.
 func getStartDatetime(endDatetime time.Time) (time.Time, bool) {
 	reader := bufio.NewReader(os.Stdin)
 	for {
@@ -320,6 +340,15 @@ func getStartDatetime(endDatetime time.Time) (time.Time, bool) {
 	}
 }
 
+// getEndDatetime prompts the user to choose the end datetime for a time range.
+//
+// This function reads user input from the standard input to determine the end datetime.
+// The user can choose to use the current date and time or specify a custom date and time.
+// If the user chooses to specify a custom date and time, the function will repeatedly prompt
+// the user until a valid date and time is entered.
+//
+// Returns:
+//   time.Time: the chosen end datetime.
 func getEndDatetime() time.Time {
 	reader := bufio.NewReader(os.Stdin)
 	for {
@@ -349,6 +378,22 @@ func getEndDatetime() time.Time {
 }
 
 
+// processLogs processes log messages from Kafka topics within a specified time range.
+//
+// Parameters:
+//   - startDatetime: the start of the time range (inclusive).
+//   - endDatetime: the end of the time range (inclusive).
+//
+// Returns:
+//   - ipCountryCounter: a map of countries to their denied IPs and counts.
+//   - domainCounter: a map of domains to their denied counts.
+//   - processedCount: the total number of messages processed.
+//   - skippedCount: the total number of messages skipped.
+//   - totalDenied: the total number of denied queries.
+//   - firstMessage: the first log message processed.
+//   - lastMessage: the last log message processed.
+//   - consumeDuration: the time taken to consume messages.
+//   - processDuration: the time taken to process messages.
 func processLogs(startDatetime, endDatetime time.Time) (map[string]map[string]int, map[string]int, int, int, int, *LogMessage, *LogMessage, time.Duration, time.Duration) {
 	consumeStartTime := time.Now()
 
@@ -507,6 +552,21 @@ func processLogs(startDatetime, endDatetime time.Time) (map[string]map[string]in
 	return ipCountryCounter, domainCounter, processedCount, skippedCount, totalDenied, firstMessage, lastMessage, consumeDuration, processDuration
 }
 
+// generateSummary generates a summary of the processed logs.
+//
+// Parameters:
+//   ipCountryCounter: a map of countries to their denied IPs and counts
+//   domainCounter: a map of domains to their denied counts
+//   processedCount: the total number of messages processed
+//   skippedCount: the total number of messages skipped
+//   totalDenied: the total number of denied queries
+//   firstMessage: the first log message processed
+//   lastMessage: the last log message processed
+//   consumeDuration: the time taken to consume messages
+//   processDuration: the time taken to process messages
+//
+// Returns:
+//   A string containing the summary of the processed logs.
 func generateSummary(ipCountryCounter map[string]map[string]int, domainCounter map[string]int, processedCount, skippedCount, totalDenied int, firstMessage, lastMessage *LogMessage, consumeDuration, processDuration time.Duration) string {
 	var output strings.Builder
 
@@ -538,6 +598,13 @@ func generateSummary(ipCountryCounter map[string]map[string]int, domainCounter m
 	return output.String()
 }
 
+// getTopCountries returns the top N countries with the most denied IPs.
+//
+// Parameters:
+//   - ipCountryCounter: map[string]map[string]int, a nested map of countries and their IP counts.
+//   - n: int, the number of top countries to return.
+// Returns:
+//   - string: a formatted string containing the top N countries and their denied IP counts.
 func getTopCountries(ipCountryCounter map[string]map[string]int, n int) string {
 	var output strings.Builder
 	type kv struct {
@@ -564,6 +631,14 @@ func getTopCountries(ipCountryCounter map[string]map[string]int, n int) string {
 	return output.String()
 }
 
+// getTopN returns the top N items from a map.
+//
+// Parameters:
+//   - counter: map[string]int, a map of items and their counts.
+//   - n: int, the number of top items to return.
+//
+// Returns:
+//   - string: a formatted string containing the top N items and their counts.
 func getTopN(counter map[string]int, n int) string {
 	var output strings.Builder
 	type kv struct {
