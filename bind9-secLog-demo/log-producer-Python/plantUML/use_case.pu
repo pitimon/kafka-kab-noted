@@ -1,0 +1,25 @@
+@startuml
+!theme plain
+left to right direction
+actor "System Admin" as admin
+actor "Kafka Cluster" as kafka
+
+rectangle "File Watcher and Kafka Publisher" {
+  usecase "Configure System" as UC1
+  usecase "Monitor Log File" as UC2
+  usecase "Process File Changes" as UC3
+  usecase "Extract Timestamp" as UC4
+  usecase "Publish to Kafka" as UC5
+  usecase "Handle Errors" as UC6
+}
+
+admin --> UC1
+admin --> UC2
+UC2 ..> UC3 : <<include>>
+UC3 ..> UC4 : <<include>>
+UC3 ..> UC5 : <<include>>
+UC5 --> kafka
+UC2 ..> UC6 : <<extend>>
+UC5 ..> UC6 : <<extend>>
+
+@enduml

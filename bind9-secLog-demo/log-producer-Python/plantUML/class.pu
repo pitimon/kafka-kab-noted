@@ -1,0 +1,35 @@
+@startuml
+!theme plain
+title Class Diagram: File Watcher and Kafka Publisher
+
+class FileHandler {
+  - producer: KafkaProducer
+  - current_file: str
+  - file_position: int
+  + __init__()
+  + process_IN_MODIFY(event: Event)
+  + process_IN_CREATE(event: Event)
+  + process_file()
+  + send_line_to_kafka(line: str)
+  + extract_timestamp(line: str): float
+}
+
+class KafkaProducer {
+  + send(topic: str, value: dict): Future
+}
+
+class pyinotify.ProcessEvent {
+  + process_IN_MODIFY(event: Event)
+  + process_IN_CREATE(event: Event)
+}
+
+class "kafka_config" {
+  + read_properties(file_path: str): dict
+  + create_kafka_producer(properties_file: str): KafkaProducer
+}
+
+FileHandler --|> pyinotify.ProcessEvent
+FileHandler --> KafkaProducer : uses
+FileHandler ..> "kafka_config" : uses
+
+@enduml

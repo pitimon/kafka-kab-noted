@@ -1,0 +1,32 @@
+@startuml
+!theme plain
+title Activity Diagram: File Watcher and Kafka Publisher
+
+start
+:Load Kafka configuration;
+:Create Kafka Producer;
+:Initialize File Handler;
+:Set up pyinotify WatchManager;
+:Start watching log file;
+
+while (Monitoring file) is (yes)
+  if (File modified?) then (yes)
+    :Read new lines;
+    :Extract timestamp;
+    :Create message;
+    :Send to Kafka;
+    if (Send successful?) then (yes)
+      :Log success;
+    else (no)
+      :Log error;
+    endif
+  elseif (New file created?) then (yes)
+    :Update current file;
+    :Reset file position;
+  else (no)
+    :Continue monitoring;
+  endif
+endwhile (no)
+
+stop
+@enduml

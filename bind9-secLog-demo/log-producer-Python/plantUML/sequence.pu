@@ -1,0 +1,52 @@
+@startuml
+!theme plain
+title Sequence Diagram: File Watcher and Kafka Publisher
+
+participant "Main" as main
+participant "WatchManager" as wm
+participant "FileHandler" as fh
+participant "KafkaProducer" as kp
+participant "Log File" as file
+participant "Kafka Cluster" as kafka
+
+main -> kp : create_kafka_producer()
+activate kp
+kp -> main : return producer
+deactivate kp
+
+main -> fh : create
+activate fh
+fh -> kp : set producer
+fh -> main : return handler
+deactivate fh
+
+main -> wm : create
+activate wm
+wm -> main : return manager
+deactivate wm
+
+main -> wm : add_watch()
+activate wm
+wm -> main : return
+deactivate wm
+
+loop while monitoring
+  wm -> fh : process_IN_MODIFY()
+  activate fh
+  fh -> file : read new lines
+  activate file
+  file -> fh : return lines
+  deactivate file
+  fh -> fh : extract_timestamp()
+  fh -> kp : send()
+  activate kp
+  kp -> kafka : publish message
+  kafka -> kp : acknowledge
+  kp -> fh : return result
+  deactivate kp
+  fh -> fh : log result
+  fh -> wm : return
+  deactivate fh
+end
+
+@enduml
