@@ -1,0 +1,74 @@
+@startmindmap
+!theme aws-orange 
+
+* Kafka Log Processor
+** Configuration
+*** Kafka Properties
+**** Bootstrap Servers: Kafka cluster connection points
+**** Security Protocol: SASL_SSL or PLAINTEXT
+**** SASL Mechanism: Authentication method (e.g., PLAIN)
+*** GeoIP Databases
+**** Country Database: IP to country lookup
+**** ASN Database: IP to ASN lookup
+*** Processing Settings
+**** Topics: List of topics to process
+**** Start From: Latest message or historical data
+**** Time Range: Analysis time frame
+*** Security
+**** Encryption Key: Key for sensitive data encryption
+** Input Processing
+*** User Interaction
+**** Select End Time: Choose analysis end time
+**** Select Start Time: Choose analysis start time
+*** Kafka Consumption
+**** Create Consumer: Initialize Kafka consumer with settings
+**** Fetch Partitions: Retrieve partitions for each topic
+**** Create Goroutines: Spawn goroutine for each partition
+** Log Processing
+*** Message Parsing
+**** Unmarshal JSON: Convert JSON to LogMessage structure
+**** Validate Structure: Check message structure integrity
+**** Check Timestamp: Verify timestamp within specified range
+*** Data Extraction
+**** IP Address: Extract IP from message content
+**** Domain: Extract domain from message content
+*** Geolocation Lookup
+**** Country Lookup: Find country for IP address
+**** ASN Lookup: Find ASN for IP address
+*** Counter Updates
+**** IP Counter: Count occurrences of each IP
+**** Country Counter: Count occurrences of each country
+**** Domain Counter: Count occurrences of each domain
+*** Concurrency Management
+**** Goroutines: Process each partition concurrently
+**** Mutex: Prevent concurrent access to shared data
+** Analysis and Output
+*** Result Synchronization
+**** Combine Results: Aggregate results from all goroutines
+**** Calculate Statistics: Compute overall statistics
+*** Summary Generation
+**** IP Statistics: Summarize IP address data
+**** Country Statistics: Summarize country data
+**** Domain Statistics: Summarize domain data
+**** Time Range Summary: Overview of analyzed time period
+**** Performance Metrics: Processing efficiency summary
+*** Data Export
+**** CSV Export: Export data in CSV format
+**** Summary File: Save summary as text file
+**** Data Encryption: Encrypt sensitive information
+** External Dependencies
+*** Kafka Cluster: Source of log messages
+*** GeoIP Database: Geolocation information source
+** Libraries and Tools
+*** sarama: Kafka client library
+*** geoip2-golang: GeoIP database interface library
+*** viper: Configuration management library
+** Error Handling
+*** Kafka Errors: Handle Kafka connection issues
+*** Parsing Errors: Manage message parsing failures
+*** Geolocation Errors: Handle geolocation lookup failures
+** Security Measures
+*** SASL Authentication: Authenticate with Kafka cluster
+*** TLS Encryption: Encrypt communication with Kafka
+*** Data Encryption: Encrypt sensitive output data
+@endmindmap

@@ -106,6 +106,10 @@ func init() {
 	}
 }
 
+// loadProperties loads configuration properties from a file.
+//
+// filename is the path to the configuration file.
+// Returns a viper.Viper instance and an error if the file cannot be read.
 func loadProperties(filename string) (*viper.Viper, error) {
 	v := viper.New()
 	v.SetConfigFile(filename)
@@ -117,6 +121,14 @@ func loadProperties(filename string) (*viper.Viper, error) {
 	return v, nil
 }
 
+// extractIPAndDomain extracts the IP address and domain name from a log entry.
+//
+// Parameters:
+//   - logEntry: a string representing the log entry.
+//
+// Returns:
+//   - string: the extracted IP address, or an empty string if not found.
+//   - string: the extracted domain name, or an empty string if not found.
 func extractIPAndDomain(logEntry string) (string, string) {
 	ipPattern := `\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3}`
 	domainPattern := `\(([^)]+)\)`
@@ -135,6 +147,14 @@ func extractIPAndDomain(logEntry string) (string, string) {
 	return ipMatch, domain
 }
 
+// getCountryAndASNFromIP retrieves country and ASN information for an IP address.
+//
+// Parameters:
+//   - ipStr: a string representing the IP address.
+//
+// Returns:
+//   - string: the country name in English.
+//   - uint: the Autonomous System Number (ASN) of the IP address.
 func getCountryAndASNFromIP(ipStr string) (string, uint) {
 	ip := net.ParseIP(ipStr)
 	if ip == nil {
@@ -178,6 +198,14 @@ func createTLSConfig(props *viper.Viper) (*tls.Config, error) {
 	return tlsConfig, nil
 }
 
+// createKafkaConsumer creates a new Kafka consumer based on the provided properties file.
+//
+// Parameters:
+//   - propertiesFile: a string representing the path to the properties file.
+//
+// Returns:
+//   - sarama.Consumer: the created Kafka consumer.
+//   - error: any error that occurred during consumer creation.
 func createKafkaConsumer(propertiesFile string) (sarama.Consumer, error) {
 	props, err := loadProperties(propertiesFile)
 	if err != nil {
@@ -565,6 +593,13 @@ func ensureResultDirectory() error {
 	return nil
 }
 
+// saveOutputToFile saves the given content to a file in the 'result' directory.
+//
+// Parameters:
+//   - filename: string, the name of the file to save the output to
+//   - content: string, the content to be saved
+// Returns:
+//   - error: an error if the file couldn't be created or written to, nil otherwise
 func saveOutputToFile(filename string, content string) error {
 	if err := ensureResultDirectory(); err != nil {
 		return fmt.Errorf("failed to create result directory: %v", err)
@@ -581,6 +616,14 @@ func saveOutputToFile(filename string, content string) error {
 	return err
 }
 
+// exportToCSV exports the IP and domain data to a CSV file.
+//
+// Parameters:
+//   - filename: string, the name of the CSV file to create
+//   - ipCountryCounter: map[string]map[string]int, a nested map of countries and their IP counts
+//   - domainCounter: map[string]int, a map of domain counts
+// Returns:
+//   - error: an error if the CSV file couldn't be created or written to, nil otherwise
 func exportToCSV(filename string, ipCountryCounter map[string]map[string]int, domainCounter map[string]int) error {
 	if err := ensureResultDirectory(); err != nil {
 		return fmt.Errorf("failed to create result directory: %v", err)
@@ -614,6 +657,13 @@ func exportToCSV(filename string, ipCountryCounter map[string]map[string]int, do
 	return nil
 }
 
+// encryptSensitiveData encrypts sensitive data using AES encryption.
+//
+// Parameters:
+//   - data: string, the data to be encrypted
+// Returns:
+//   - string: the encrypted data as a base64-encoded string
+//   - error: an error if encryption failed, nil otherwise
 func encryptSensitiveData(data string) (string, error) {
 	if config.EncryptionKey == "" {
 		return data, nil
@@ -638,6 +688,14 @@ func encryptSensitiveData(data string) (string, error) {
 	return base64.StdEncoding.EncodeToString(ciphertext), nil
 }
 
+// main is the entry point of the program.
+//
+// It gets the end datetime from user input, the start datetime and whether to start from the beginning.
+// It processes logs, generates a summary, prints it to the console, saves it to a file,
+// exports the results to a CSV file, and handles any errors that occur during the process.
+//
+// No parameters.
+// No return types.
 func main() {
 	// Get end datetime from user input
 	endDatetime := getEndDatetime()
