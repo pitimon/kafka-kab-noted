@@ -144,6 +144,8 @@ $ wc -l /eduroam/kafka-log/eduroam-nro.log
 ```
 ```
 $ date ; ./eduroam-2-kafka ; date
+```
+```result
 Sun Sep 29 07:07:52 AM +07 2024
 Enter Kafka properties file (default: client.properties): 
 Enter Kafka topic (default: eduroam-log): eduroam-log-2023
