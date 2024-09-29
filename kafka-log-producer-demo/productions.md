@@ -1,4 +1,6 @@
 ## produce to kafka 
+- Avg message size = 160 bytes
+--- 
 > log's 2023
 
 ```
