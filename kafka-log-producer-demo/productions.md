@@ -88,3 +88,28 @@ Processing complete
 Sun Sep 29 08:10:01 AM +07 2024
 ```
 ---
+> log's 2020
+```
+$ ls -l /eduroam/kafka-log/eduroam-nro.log 
+-rw-r--r-- 1 root root 12202513750 Sep 29 08:18 /eduroam/kafka-log/eduroam-nro.log
+```
+```
+$ du -hs /eduroam/kafka-log/eduroam-nro.log 
+12G     /eduroam/kafka-log/eduroam-nro.log
+```
+```
+$ wc -l /eduroam/kafka-log/eduroam-nro.log 
+91450876 /eduroam/kafka-log/eduroam-nro.log
+```
+```
+$ date ; ./eduroam-2-kafka ; date
+```
+```result
+
+```
+---
+> log's 2019
+```
+
+```
+---
