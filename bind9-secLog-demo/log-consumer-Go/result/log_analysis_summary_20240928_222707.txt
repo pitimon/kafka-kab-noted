@@ -1,0 +1,59 @@
+
+Processing Summary:
+Total messages processed: 695
+Total messages skipped: 0
+Total denied queries: 695
+Time taken to consume messages: 241.53675ms
+Time taken to process messages: 10.00095975s
+
+Top 20 Countries with Denied IPs:
+Brazil: 588
+Argentina: 101
+Colombia: 6
+
+Top 10 Denied IPs per Country:
+
+Argentina:
+200.55.26.245 (ASN: 20207): 2
+200.55.26.119 (ASN: 20207): 2
+200.55.26.216 (ASN: 20207): 2
+200.55.26.93 (ASN: 20207): 2
+200.55.26.18 (ASN: 20207): 2
+200.55.26.169 (ASN: 20207): 2
+200.55.26.198 (ASN: 20207): 2
+191.98.221.4 (ASN: 263219): 1
+200.55.26.195 (ASN: 20207): 1
+190.7.60.139 (ASN: 20207): 1
+
+Brazil:
+45.165.33.194 (ASN: 268656): 3
+179.191.59.9 (ASN: 262494): 3
+179.191.59.207 (ASN: 262494): 2
+45.165.33.193 (ASN: 268656): 2
+179.191.59.7 (ASN: 262494): 2
+177.66.91.192 (ASN: 52846): 2
+177.66.91.244 (ASN: 52846): 2
+179.191.59.60 (ASN: 262494): 2
+45.165.33.67 (ASN: 268656): 2
+179.191.59.44 (ASN: 262494): 2
+
+Colombia:
+38.156.92.227 (ASN: 272137): 1
+38.156.92.62 (ASN: 272137): 1
+38.156.93.109 (ASN: 272137): 1
+38.156.93.40 (ASN: 272137): 1
+38.156.93.116 (ASN: 272137): 1
+38.156.92.175 (ASN: 272137): 1
+
+Top 10 Domains Denied:
+globo.com: 251
+vmware.com: 131
+ebay.com: 127
+spotify.com: 96
+atlassian.com: 39
+microsoft.com: 33
+uber.com: 18
+
+Last processed message:
+Time: 2024-09-28 22:26:54.786237478 +0700 +07
+Content: 23-Sep-2024 21:19:22.102 security: info: client @0x7f6b89eeb168 186.233.193.178#37603 (globo.com): query (cache) 'globo.com/TXT/IN' denied (allow-query-cache did not match)

@@ -1,0 +1,80 @@
+
+Processing Summary:
+Total messages processed: 536
+Total messages skipped: 0
+Total denied queries: 536
+Time taken to consume messages: 106.923ms
+Time taken to process messages: 9.001029291s
+
+Top 20 Countries with Denied IPs:
+Brazil: 378
+Chile: 119
+Colombia: 28
+Argentina: 7
+Venezuela: 4
+
+Top 10 Denied IPs per Country:
+
+Brazil:
+45.177.114.104 (ASN: 270814): 3
+45.177.114.23 (ASN: 270814): 2
+187.33.87.230 (ASN: 28661): 2
+45.177.249.1 (ASN: 273774): 2
+45.177.249.150 (ASN: 273774): 2
+187.33.87.163 (ASN: 28661): 2
+45.177.114.106 (ASN: 270814): 2
+177.47.80.146 (ASN: 262480): 2
+45.177.114.107 (ASN: 270814): 2
+45.177.114.120 (ASN: 270814): 2
+
+Chile:
+190.95.86.241 (ASN: 14117): 3
+179.0.8.170 (ASN: 52460): 2
+190.95.86.50 (ASN: 14117): 2
+190.95.86.237 (ASN: 14117): 2
+190.95.86.226 (ASN: 14117): 2
+179.0.8.35 (ASN: 52460): 2
+190.95.86.121 (ASN: 14117): 2
+190.95.86.42 (ASN: 14117): 2
+190.95.86.232 (ASN: 14117): 2
+190.95.86.253 (ASN: 14117): 2
+
+Colombia:
+190.90.33.143 (ASN: 262589): 2
+190.90.33.227 (ASN: 262589): 1
+190.90.33.24 (ASN: 262589): 1
+190.90.33.95 (ASN: 262589): 1
+190.90.33.236 (ASN: 262589): 1
+190.90.33.141 (ASN: 262589): 1
+190.90.33.179 (ASN: 262589): 1
+190.90.33.191 (ASN: 262589): 1
+190.90.33.242 (ASN: 262589): 1
+190.90.33.108 (ASN: 262589): 1
+
+Venezuela:
+45.186.211.43 (ASN: 263703): 1
+45.186.211.67 (ASN: 263703): 1
+45.186.211.229 (ASN: 263703): 1
+45.186.211.247 (ASN: 263703): 1
+
+Argentina:
+190.6.222.253 (ASN: 28015): 1
+190.6.222.60 (ASN: 28015): 1
+190.6.222.32 (ASN: 28015): 1
+190.6.222.3 (ASN: 28015): 1
+190.6.222.37 (ASN: 28015): 1
+190.6.222.109 (ASN: 28015): 1
+190.6.222.7 (ASN: 28015): 1
+
+Top 10 Domains Denied:
+zendesk.com: 240
+google.com: 105
+spotify.com: 95
+cisco.com: 40
+microsoft.com: 37
+zoom.com: 10
+adobe.com: 9
+
+Last processed message:
+Time: 2024-09-28 22:30:39.775276184 +0700 +07
+Content: 23-Sep-2024 21:19:51.394 security: info: client @0x7f6b88e57168 200.4.127.102#27381 (spotify.com): query (cache) 'spotify.com/TXT/IN' denied (allow-query-cache did not match)

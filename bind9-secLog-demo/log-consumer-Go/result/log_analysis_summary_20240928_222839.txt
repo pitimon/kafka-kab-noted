@@ -1,0 +1,60 @@
+
+Processing Summary:
+Total messages processed: 105
+Total messages skipped: 0
+Total denied queries: 105
+Time taken to consume messages: 70.824583ms
+Time taken to process messages: 15.001066s
+
+Top 20 Countries with Denied IPs:
+Brazil: 70
+Chile: 24
+Argentina: 11
+
+Top 10 Denied IPs per Country:
+
+Argentina:
+190.6.222.228 (ASN: 28015): 2
+190.6.222.107 (ASN: 28015): 1
+190.6.222.187 (ASN: 28015): 1
+190.6.222.103 (ASN: 28015): 1
+190.6.222.98 (ASN: 28015): 1
+190.7.60.210 (ASN: 20207): 1
+190.7.60.236 (ASN: 20207): 1
+190.7.60.42 (ASN: 20207): 1
+190.6.222.4 (ASN: 28015): 1
+190.6.222.172 (ASN: 28015): 1
+
+Brazil:
+177.154.28.243 (ASN: 263145): 1
+177.154.28.49 (ASN: 263145): 1
+190.89.233.96 (ASN: 270397): 1
+177.152.126.208 (ASN: 271477): 1
+187.33.87.115 (ASN: 28661): 1
+177.152.126.249 (ASN: 271477): 1
+187.33.87.236 (ASN: 28661): 1
+187.33.87.63 (ASN: 28661): 1
+187.33.87.119 (ASN: 28661): 1
+189.1.9.229 (ASN: 28661): 1
+
+Chile:
+190.153.241.194 (ASN: 14259): 1
+190.153.241.141 (ASN: 14259): 1
+179.0.8.199 (ASN: 52460): 1
+179.0.8.192 (ASN: 52460): 1
+179.0.8.91 (ASN: 52460): 1
+190.153.241.143 (ASN: 14259): 1
+190.153.241.255 (ASN: 14259): 1
+190.153.241.210 (ASN: 14259): 1
+179.0.8.55 (ASN: 52460): 1
+190.153.241.131 (ASN: 14259): 1
+
+Top 10 Domains Denied:
+adobe.com: 67
+google.com: 25
+atlassian.com: 11
+microsoft.com: 2
+
+Last processed message:
+Time: 2024-09-28 22:28:21.785808086 +0700 +07
+Content: 23-Sep-2024 21:19:31.458 security: info: client @0x7f6b89eeb168 187.33.87.214#15262 (google.com): query (cache) 'google.com/TXT/IN' denied (allow-query-cache did not match)
