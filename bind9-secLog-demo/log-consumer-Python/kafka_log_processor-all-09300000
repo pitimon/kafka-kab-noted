@@ -1,0 +1,226 @@
+import ssl
+from confluent_kafka import Consumer, KafkaError, TopicPartition
+import json
+from collections import Counter
+import re
+import logging
+import datetime
+import pytz
+import uuid
+import os
+import time
+
+logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')
+
+try:
+    import lz4
+except ImportError:
+    logging.warning("lz4 library not found. If your Kafka messages are compressed with lz4, please install it using 'pip install lz4'")
+
+def load_properties(filename):
+    properties = {}
+    with open(filename, 'r') as f:
+        for line in f:
+            line = line.strip()
+            if line and not line.startswith('#'):
+                key, value = line.split('=', 1)
+                properties[key.strip()] = value.strip()
+    return properties
+
+def extract_ip_and_domain(log_entry):
+    ip_pattern = r'\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3}'
+    domain_pattern = r'\((.*?)\)'
+    
+    ip_match = re.search(ip_pattern, log_entry)
+    domain_match = re.search(domain_pattern, log_entry)
+    
+    ip = ip_match.group(0) if ip_match else None
+    domain = domain_match.group(1) if domain_match else None
+    
+    return ip, domain
+
+def create_kafka_consumer(properties_file, start_from_beginning=False):
+    props = load_properties(properties_file)
+    
+    consumer_config = {
+        'bootstrap.servers': props['bootstrap.servers'],
+        'group.id': f'log-processor-{uuid.uuid4()}',
+        'auto.offset.reset': 'earliest' if start_from_beginning else 'latest',
+        'enable.auto.commit': 'true',
+        'security.protocol': props['security.protocol'],
+        'sasl.mechanisms': props['sasl.mechanism'],
+        'sasl.username': props['sasl.jaas.config'].split('username="')[1].split('"')[0],
+        'sasl.password': props['sasl.jaas.config'].split('password="')[1].split('"')[0],
+    }
+    
+    if props['security.protocol'] in ['SSL', 'SASL_SSL']:
+        context = ssl.create_default_context()
+        context.check_hostname = False
+        context.verify_mode = ssl.CERT_NONE
+        consumer_config['ssl.ca.location'] = None
+        consumer_config['enable.ssl.certificate.verification'] = 'false'
+        logging.warning("SSL verification is automatically skipped. This is not recommended for production use.")
+    
+    return Consumer(consumer_config)
+
+def process_message(raw_message):
+    try:
+        decoded_message = raw_message.decode('utf-8')
+        json_message = json.loads(decoded_message)
+        if json_message.get('file_name') == 'security.log':
+            return json_message, decoded_message
+    except json.JSONDecodeError:
+        pass
+    except UnicodeDecodeError:
+        pass
+    return None, None
+
+def timestamp_to_datetime(timestamp):
+    dt_utc = datetime.datetime.fromtimestamp(timestamp, datetime.UTC)
+    local_tz = pytz.timezone('Asia/Bangkok')  # Adjust this to your local timezone
+    dt_local = dt_utc.astimezone(local_tz)
+    return dt_local
+
+def save_results_to_file(ip_counter, domain_counter, processing_summary, first_message, last_message):
+    timestamp = datetime.datetime.now().strftime("%Y%m%d_%H%M%S")
+    filename = f"log_processing_results_{timestamp}.json"
+    
+    results = {
+        "top_10_ip_addresses": dict(ip_counter.most_common(10)),
+        "top_10_domains": dict(domain_counter.most_common(10)),
+        "processing_summary": processing_summary,
+        "first_processed_message": {
+            "time": str(first_message[0]) if first_message else None,
+            "raw_message": first_message[1] if first_message else None
+        },
+        "last_processed_message": {
+            "time": str(last_message[0]) if last_message else None,
+            "raw_message": last_message[1] if last_message else None
+        }
+    }
+    
+    with open(filename, 'w') as f:
+        json.dump(results, f, indent=2)
+    
+    logging.info(f"Results saved to {filename}")
+
+def process_logs():
+    consumer = create_kafka_consumer('k0100-client.properties', start_from_beginning=True)
+    
+    ip_counter = Counter()
+    domain_counter = Counter()
+    processed_count = 0
+    skipped_count = 0
+    skipped_non_security = 0
+    skipped_non_denied = 0
+    first_message = None
+    last_message = None
+    start_time = time.time()
+    total_messages = 0
+
+    try:
+        consumer.subscribe(['logCentral'])
+        
+        while True:
+            msg = consumer.poll(1.0)
+            if msg is None:
+                continue
+            if msg.error():
+                if msg.error().code() == KafkaError._PARTITION_EOF:
+                    logging.info('Reached end of partition')
+                    break
+                else:
+                    logging.error(f"Consumer error: {msg.error()}")
+                continue
+            
+            total_messages += 1
+            json_message, raw_message = process_message(msg.value())
+            if json_message:
+                timestamp = json_message.get('timestamp')
+                message_datetime = timestamp_to_datetime(timestamp)
+                
+                log_entry = json_message.get('content', '')
+                if 'denied' in log_entry:
+                    processed_count += 1
+                    if first_message is None:
+                        first_message = (message_datetime, raw_message)
+                    last_message = (message_datetime, raw_message)
+
+                    ip, domain = extract_ip_and_domain(log_entry)
+                    if ip:
+                        ip_counter[ip] += 1
+                    if domain:
+                        domain_counter[domain] += 1
+                else:
+                    skipped_non_denied += 1
+            else:
+                skipped_non_security += 1
+
+            if total_messages % 100000 == 0:
+                logging.info(f"Processed: {processed_count}, Skipped: {skipped_non_security + skipped_non_denied}")
+
+    except KeyboardInterrupt:
+        logging.info("Interrupted by user. Closing consumer...")
+    except Exception as e:
+        logging.error(f"An error occurred: {str(e)}")
+    finally:
+        consumer.close()
+
+    end_time = time.time()
+    total_time = end_time - start_time
+    average_processing_rate = processed_count / total_time if total_time > 0 else 0
+    average_consumption_rate = total_messages / total_time if total_time > 0 else 0
+
+    skipped_count = skipped_non_security + skipped_non_denied
+
+    processing_summary = {
+        "total_messages_consumed": total_messages,
+        "total_messages_processed": processed_count,
+        "total_messages_skipped": skipped_count,
+        "skipped_non_security": skipped_non_security,
+        "skipped_non_denied": skipped_non_denied,
+        "total_unique_ip_addresses": len(ip_counter),
+        "total_unique_domains": len(domain_counter),
+        "average_processing_rate": average_processing_rate,
+        "average_consumption_rate": average_consumption_rate,
+        "total_processing_time": total_time
+    }
+
+    save_results_to_file(ip_counter, domain_counter, processing_summary, first_message, last_message)
+
+    logging.info(f"Total processed: {processed_count}, Total skipped: {skipped_count}, "
+                 f"Average processing rate: {average_processing_rate:.2f} messages/second, "
+                 f"Average consumption rate: {average_consumption_rate:.2f} messages/second")
+    
+    print("\nTop 10 IP Addresses Denied:")
+    for ip, count in ip_counter.most_common(10):
+        print(f"{ip}: {count}")
+
+    print("\nTop 10 Domains Denied:")
+    for domain, count in domain_counter.most_common(10):
+        print(f"{domain}: {count}")
+
+    print("\nProcessing Summary:")
+    print(f"Total messages consumed: {total_messages}")
+    print(f"Total messages processed: {processed_count}")
+    print(f"Total messages skipped: {skipped_count}")
+    print(f"  - Skipped (non-security log): {skipped_non_security}")
+    print(f"  - Skipped (not denied): {skipped_non_denied}")
+    print(f"Total unique IP addresses: {len(ip_counter)}")
+    print(f"Total unique domains: {len(domain_counter)}")
+    print(f"Average processing rate: {average_processing_rate:.2f} messages/second")
+    print(f"Average consumption rate: {average_consumption_rate:.2f} messages/second")
+
+    if first_message:
+        print(f"\nFirst processed message:")
+        print(f"Time: {first_message[0]}")
+        print(f"Raw message: {first_message[1]}")
+    
+    if last_message:
+        print(f"\nLast processed message:")
+        print(f"Time: {last_message[0]}")
+        print(f"Raw message: {last_message[1]}")
+
+if __name__ == "__main__":
+    logging.info("Starting to process all messages from the beginning of the topic")
+    process_logs()
