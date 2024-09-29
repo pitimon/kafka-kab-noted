@@ -1,0 +1,70 @@
+@startuml
+!theme plain
+left to right direction
+skinparam actorStyle awesome
+
+actor "System Admin" as admin
+actor "Kafka Cluster" as kafka
+actor "File System" as fs
+
+rectangle "File Watcher and Kafka Publisher Service" {
+  usecase "Configure System" as UC1
+  usecase "Start Service" as UC2
+  usecase "Stop Service" as UC3
+  usecase "Restart Service" as UC4
+  usecase "Monitor Log File" as UC5
+  usecase "Process File Changes" as UC6
+  usecase "Extract Timestamp" as UC7
+  usecase "Create Kafka Message" as UC8
+  usecase "Publish to Kafka" as UC9
+  usecase "Handle Errors" as UC10
+  usecase "View Service Logs" as UC11
+  usecase "Auto-start on Boot" as UC12
+}
+
+admin --> UC1
+admin --> UC2
+admin --> UC3
+admin --> UC4
+admin --> UC11
+UC2 ..> UC5 : <<include>>
+UC5 ..> UC6 : <<include>>
+UC6 ..> UC7 : <<include>>
+UC6 ..> UC8 : <<include>>
+UC6 ..> UC9 : <<include>>
+UC9 --> kafka : sends messages to
+UC5 ..> UC10 : <<extend>>
+UC9 ..> UC10 : <<extend>>
+UC12 ..> UC2 : <<include>>
+fs --> UC5 : triggers
+
+note right of UC1
+  - Set Kafka properties
+  - Configure log file path
+  - Set message size limits
+end note
+
+note right of UC5
+  - Use pyinotify to watch file
+  - Detect file modifications
+  - Detect file creations
+end note
+
+note right of UC6
+  - Read new lines from file
+  - Handle file rotations
+end note
+
+note right of UC8
+  - Include file name
+  - Include log content
+  - Include extracted timestamp
+end note
+
+note right of UC10
+  - Log errors
+  - Handle connection issues
+  - Implement retry mechanism
+end note
+
+@enduml

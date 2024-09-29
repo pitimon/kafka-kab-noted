@@ -1,25 +1,59 @@
 @startuml
 !theme plain
 left to right direction
+skinparam actorStyle awesome
+
 actor "System Admin" as admin
 actor "Kafka Cluster" as kafka
+actor "File System" as fs
 
 rectangle "File Watcher and Kafka Publisher" {
   usecase "Configure System" as UC1
   usecase "Monitor Log File" as UC2
   usecase "Process File Changes" as UC3
   usecase "Extract Timestamp" as UC4
-  usecase "Publish to Kafka" as UC5
-  usecase "Handle Errors" as UC6
+  usecase "Create Kafka Message" as UC5
+  usecase "Publish to Kafka" as UC6
+  usecase "Handle Errors" as UC7
 }
 
 admin --> UC1
-admin --> UC2
+fs --> UC2 : triggers
 UC2 ..> UC3 : <<include>>
 UC3 ..> UC4 : <<include>>
 UC3 ..> UC5 : <<include>>
-UC5 --> kafka
-UC2 ..> UC6 : <<extend>>
-UC5 ..> UC6 : <<extend>>
+UC3 ..> UC6 : <<include>>
+UC6 --> kafka : sends messages to
+UC2 ..> UC7 : <<extend>>
+UC6 ..> UC7 : <<extend>>
+
+note right of UC1
+  - Set Kafka properties
+  - Configure log file path
+  - Set message size limits
+end note
+
+note right of UC2
+  - Use pyinotify to watch file
+  - Detect file modifications
+  - Detect file creations
+end note
+
+note right of UC3
+  - Read new lines from file
+  - Handle file rotations
+end note
+
+note right of UC5
+  - Include file name
+  - Include log content
+  - Include extracted timestamp
+end note
+
+note right of UC7
+  - Log errors
+  - Handle connection issues
+  - Implement retry mechanism
+end note
 
 @enduml
