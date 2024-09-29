@@ -44,6 +44,17 @@ $ wc -l /eduroam/kafka-log/eduroam-nro.log
 ```
 ```
 $ date ; ./eduroam-2-kafka ; date
+```
+```result
+Sun Sep 29 07:39:17 AM +07 2024
+Enter Kafka properties file (default: client.properties): 
+Enter Kafka topic (default: eduroam-log): eduroam-log-2022
+Enter log file or pattern (default: /eduroam/kafka-log/eduroam-nro.log): 
+Enter batch size (default: 1000): 10000
+Finished processing files
 
+Progress: 100% (143723564/143723564) - 407924.92 lines/sec
+Processing complete
+Sun Sep 29 07:56:38 AM +07 2024
 ```
 ---
