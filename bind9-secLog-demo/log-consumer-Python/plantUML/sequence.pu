@@ -1,0 +1,23 @@
+@startuml
+!theme plain
+actor User
+participant Script
+participant KafkaConsumer
+participant KafkaCluster
+
+User -> Script: Start script
+Script -> User: Request end datetime
+User -> Script: Provide end datetime
+Script -> User: Request start position
+User -> Script: Choose start position
+Script -> KafkaConsumer: Create consumer
+KafkaConsumer -> KafkaCluster: Subscribe to topic
+loop Until end datetime or interrupted
+    KafkaConsumer -> KafkaCluster: Poll for messages
+    KafkaCluster --> KafkaConsumer: Return message
+    KafkaConsumer --> Script: Process message
+    Script -> Script: Extract IP and domain
+    Script -> Script: Update counters
+end
+Script -> User: Display results
+@enduml

@@ -1,0 +1,74 @@
+@startuml
+!theme plain
+title Detailed Activity Diagram for Log Processing Script
+
+start
+:Load properties file;
+:Create Kafka consumer;
+
+if (SSL Configuration?) then (yes)
+  :Configure SSL;
+  if (Skip SSL verification?) then (yes)
+    :Disable SSL verification;
+  else (no)
+    :Set CA certificate location;
+  endif
+endif
+
+:Set consumer group ID;
+:Set auto offset reset;
+:Subscribe to Kafka topic;
+
+:Get end datetime;
+if (Current time?) then (yes)
+  :Set end datetime to current time;
+else (no)
+  :Input custom end datetime;
+endif
+
+:Choose start position;
+if (Start from beginning?) then (yes)
+  :Set offset to earliest;
+else (no)
+  :Set offset to latest;
+endif
+
+while (Polling for messages) is (continue)
+  :Poll for message;
+  if (Message received?) then (yes)
+    :Process message;
+    if (Is security.log?) then (yes)
+      :Extract timestamp;
+      if (Timestamp <= End datetime?) then (yes)
+        :Extract IP and domain;
+        if (Contains 'denied'?) then (yes)
+          :Update IP counter;
+          :Update domain counter;
+        endif
+      else (no)
+        :Stop processing;
+        break
+      endif
+    endif
+  else (no)
+    :Check for errors;
+    if (Error occurred?) then (yes)
+      if (Partition EOF?) then (no)
+        :Log error;
+      endif
+    endif
+  endif
+  :Update processed count;
+  :Update skipped count;
+  if (Processed count % 1000 == 0) then (yes)
+    :Log progress;
+  endif
+endwhile
+
+:Close Kafka consumer;
+:Display IP addresses denied;
+:Display domains denied;
+:Display processing summary;
+stop
+
+@enduml

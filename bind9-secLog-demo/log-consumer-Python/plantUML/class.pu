@@ -1,0 +1,43 @@
+@startuml
+!theme plain
+class KafkaConsumer {
+  -properties: dict
+  -consumer_config: dict
+  +create_kafka_consumer(properties_file: str, start_from_beginning: bool)
+  +subscribe(topics: list)
+  +poll(timeout: float)
+  +close()
+}
+
+class MessageProcessor {
+  +process_message(raw_message: bytes)
+  -decode_message(message: bytes)
+  -parse_json(message: str)
+}
+
+class LogAnalyzer {
+  -ip_counter: Counter
+  -domain_counter: Counter
+  +extract_ip_and_domain(log_entry: str)
+  +update_counters(ip: str, domain: str)
+  +get_results()
+}
+
+class TimeManager {
+  +timestamp_to_datetime(timestamp: int)
+  +get_end_datetime()
+}
+
+class MainProcessor {
+  -consumer: KafkaConsumer
+  -message_processor: MessageProcessor
+  -log_analyzer: LogAnalyzer
+  -time_manager: TimeManager
+  +process_logs(end_datetime: datetime, start_from_beginning: bool)
+}
+
+MainProcessor --> KafkaConsumer
+MainProcessor --> MessageProcessor
+MainProcessor --> LogAnalyzer
+MainProcessor --> TimeManager
+@enduml

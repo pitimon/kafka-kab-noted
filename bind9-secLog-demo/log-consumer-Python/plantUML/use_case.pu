@@ -1,0 +1,56 @@
+@startuml
+!theme plain
+left to right direction
+actor "User" as user
+actor "Kafka Cluster" as kafka
+rectangle "Log Processing System" {
+  usecase "Start script" as UC1
+  usecase "Load properties" as UC2
+  usecase "Set end datetime" as UC3
+  usecase "Choose start position" as UC4
+  usecase "Configure SSL" as UC5
+  usecase "Create Kafka consumer" as UC6
+  usecase "Subscribe to topic" as UC7
+  usecase "Poll for messages" as UC8
+  usecase "Process messages" as UC9
+  usecase "Extract IP and domain" as UC10
+  usecase "Update counters" as UC11
+  usecase "Display results" as UC12
+  usecase "Handle errors" as UC13
+}
+
+user --> UC1
+user --> UC3
+user --> UC4
+user --> UC5
+UC1 ..> UC2 : <<include>>
+UC1 ..> UC6 : <<include>>
+UC6 ..> UC5 : <<include>>
+UC6 ..> UC7 : <<include>>
+UC7 --> kafka
+UC8 --> kafka
+UC9 ..> UC10 : <<include>>
+UC9 ..> UC11 : <<include>>
+UC1 ..> UC8 : <<include>>
+UC1 ..> UC9 : <<include>>
+UC1 ..> UC12 : <<include>>
+UC1 ..> UC13 : <<extend>>
+user <-- UC12
+
+note right of UC3
+  User can choose current time
+  or specify a custom time
+end note
+
+note right of UC4
+  User can start from the beginning
+  or the latest offset
+end note
+
+note right of UC13
+  System handles various errors:
+  - Connection errors
+  - Message parsing errors
+  - Interruptions
+end note
+@enduml
