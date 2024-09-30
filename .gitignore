@@ -28,6 +28,8 @@ bind9-secLog-demo/log-consumer-Go/k0100-client.properties
 bind9-secLog-demo/log-consumer-Python/k0100-client.properties
 bind9-secLog-demo/log-consumer-Go/kafka-log-processor
 bind9-secLog-demo/log-consumer-Go/result/*.csv
-bind9-secLog-demo/log-consumer-Python/kafka_log_processor_*
+# bind9-secLog-demo/log-consumer-Python/kafka_log_processor_*
+bind9-secLog-demo/log-consumer-Python/output
+bind9-secLog-demo/log-consumer-Python/env
 bind9-secLog-demo/log-consumer-Python/kafka_log_processor.py-*
 bind9-secLog-demo/log-consumer-Python/log*
