@@ -1,101 +1,122 @@
 # โปรแกรม Kafka producer
 ### Use case diagram
 
-- Class Diagram สำหรับโปรแกรม Kafka Producer โดยจะแสดงโครงสร้างของคลาสและความสัมพันธ์ระหว่างคลาสต่าง ๆ ที่สำคัญในโปรแกรม
+- Sequence Diagram 
 
 ```plantuml
 @startuml
-skinparam classAttributeIconSize 0
+skinparam sequenceMessageAlign center
 
-class Main {
-  - kafkaPropertiesFile: string
-  - kafkaTopic: string
-  - logFile: string
-  - batchSize: int
-  + main()
-}
+actor User
+participant "Main" as Main
+participant "KafkaConfig" as Config
+participant "AsyncProducer" as Producer
+participant "FileProcessor" as FileProc
+participant "LineProcessor" as LineProc
+participant "ProgressTracker" as Progress
+database "Kafka" as Kafka
+database "LogFiles" as LogFiles
 
-class KafkaConfig {
-  - BootstrapServers: string
-  - SecurityProtocol: string
-  - SaslMechanism: string
-  - SaslUsername: string
-  - SaslPassword: string
-}
+User -> Main : Start program
+activate Main
 
-class AsyncProducer {
-  + Input() chan<- *ProducerMessage
-  + Errors() <-chan *ProducerError
-  + AsyncClose()
-}
+Main -> User : Request input (properties file, topic, log file, batch size)
+User -> Main : Provide input
 
-class FileProcessor {
-  - totalLines: *int64
-  - processedLines: *int64
-  - linesChan: chan<- string
-  + processFile(filePath: string, producer: AsyncProducer)
-}
+Main -> Config : readProperties(kafkaPropertiesFile)
+activate Config
+Config -> Config : Parse properties file
+Config --> Main : Return KafkaConfig
+deactivate Config
 
-class LineProcessor {
-  - producer: AsyncProducer
-  - processedLines: *int64
-  + processLines(lines: <-chan string)
-}
+Main -> Producer : createKafkaProducer(config)
+activate Producer
+Producer -> Producer : Configure SASL/SSL and batching
+Producer --> Main : Return AsyncProducer
+deactivate Producer
 
-class ProgressTracker {
-  - totalLines: *int64
-  - processedLines: *int64
-  - doneChan: <-chan bool
-  + updateProgress()
-}
+Main -> FileProc : getLogFiles(logFile)
+activate FileProc
+FileProc -> FileProc : Check for wildcards and expand
+FileProc --> Main : Return list of log files
+deactivate FileProc
 
-Main --> KafkaConfig : uses
-Main --> AsyncProducer : creates and uses
-Main --> FileProcessor : creates and uses
-Main --> LineProcessor : creates and uses
-Main --> ProgressTracker : creates and uses
+Main -> Progress : Start updateProgress goroutine
+activate Progress
 
-FileProcessor --> LineProcessor : sends lines to
-LineProcessor --> AsyncProducer : sends messages to
-ProgressTracker ..> FileProcessor : monitors
-ProgressTracker ..> LineProcessor : monitors
+Main -> FileProc : Start processFile goroutines
+activate FileProc
+
+loop For each log file
+    FileProc -> LogFiles : Open and read file
+    activate LogFiles
+    loop For each line in file
+        LogFiles --> FileProc : Return line
+        FileProc -> LineProc : Send line to linesChan
+        activate LineProc
+        LineProc -> Producer : Create and send ProducerMessage
+        Producer -> Kafka : Send message
+        LineProc -> Progress : Update processedLines count
+        deactivate LineProc
+    end
+    LogFiles --> FileProc : End of file
+    deactivate LogFiles
+end
+
+FileProc --> Main : All files processed
+deactivate FileProc
+
+Main -> LineProc : Close linesChan
+deactivate LineProc
+
+Main -> Producer : AsyncClose()
+Producer -> Kafka : Flush remaining messages
+
+Main -> Producer : Wait for Errors channel
+Producer --> Main : Return any errors
+
+Main -> Progress : Send done signal
+deactivate Progress
+
+Main -> User : Display final progress and completion message
+deactivate Main
 
 @enduml
 
 ```
 
-คำอธิบายสำหรับ Class Diagram นี้:
+คำอธิบายสำหรับ Sequence Diagram นี้:
 
-1. Main: คลาสหลักที่ควบคุมการทำงานของโปรแกรม
-   - มีฟิลด์สำหรับเก็บค่าการตั้งค่าต่าง ๆ
-   - มีเมธอด main() ที่เป็นจุดเริ่มต้นของโปรแกรม
+1. User เริ่มโปรแกรมและให้ข้อมูลนำเข้าที่จำเป็น
 
-2. KafkaConfig: คลาสที่เก็บการตั้งค่าสำหรับการเชื่อมต่อ Kafka
-   - มีฟิลด์สำหรับเก็บค่าการตั้งค่าต่าง ๆ ของ Kafka
+2. Main อ่านไฟล์ properties ผ่าน KafkaConfig
 
-3. AsyncProducer: อินเตอร์เฟซที่แทน Kafka AsyncProducer
-   - มีเมธอดสำหรับส่งข้อความและจัดการข้อผิดพลาด
+3. Main สร้าง AsyncProducer โดยใช้การตั้งค่าที่อ่านมา
 
-4. FileProcessor: คลาสที่จัดการการอ่านไฟล์
-   - มีฟิลด์สำหรับเก็บค่าตัวนับและช่องสำหรับส่งบรรทัด
-   - มีเมธอด processFile() สำหรับประมวลผลไฟล์
+4. Main ค้นหาไฟล์ log ที่ต้องประมวลผลผ่าน FileProcessor
 
-5. LineProcessor: คลาสที่จัดการการประมวลผลแต่ละบรรทัด
-   - มีฟิลด์สำหรับ producer และตัวนับบรรทัดที่ประมวลผลแล้ว
-   - มีเมธอด processLines() สำหรับประมวลผลบรรทัดและส่งไปยัง Kafka
+5. Main เริ่ม goroutine สำหรับ ProgressTracker เพื่อติดตามความคืบหน้า
 
-6. ProgressTracker: คลาสที่ติดตามและแสดงความคืบหน้า
-   - มีฟิลด์สำหรับตัวนับและช่องสัญญาณ
-   - มีเมธอด updateProgress() สำหรับอัปเดตและแสดงความคืบหน้า
+6. Main เริ่ม goroutines สำหรับ FileProcessor เพื่อประมวลผลไฟล์:
+   - FileProcessor อ่านแต่ละไฟล์
+   - สำหรับแต่ละบรรทัด, ส่งไปยัง LineProcessor ผ่าน channel
+   - LineProcessor สร้างและส่ง ProducerMessage ไปยัง AsyncProducer
+   - AsyncProducer ส่งข้อความไปยัง Kafka
+   - LineProcessor อัปเดตจำนวนบรรทัดที่ประมวลผลใน ProgressTracker
 
-ความสัมพันธ์ระหว่างคลาส:
-- Main ใช้งานคลาสอื่น ๆ ทั้งหมด
-- FileProcessor ส่งข้อมูลไปยัง LineProcessor
-- LineProcessor ส่งข้อความไปยัง AsyncProducer
-- ProgressTracker ติดตามความคืบหน้าของ FileProcessor และ LineProcessor
+7. เมื่อประมวลผลไฟล์ทั้งหมดเสร็จ, Main ปิด linesChan
 
-Diagram นี้แสดงให้เห็นโครงสร้างและความสัมพันธ์ระหว่างคลาสต่าง ๆ ในโปรแกรม ช่วยให้เข้าใจการออกแบบและการแบ่งความรับผิดชอบของแต่ละส่วนในระบบ
+8. Main เรียก AsyncClose บน Producer เพื่อส่งข้อความที่เหลือ
 
+9. Main รอและจัดการข้อผิดพลาดจาก Producer
+
+10. Main ส่งสัญญาณ "done" ไปยัง ProgressTracker
+
+11. Main แสดงข้อความสรุปและเสร็จสิ้นโปรแกรม
+
+Diagram นี้แสดงการโต้ตอบระหว่างส่วนประกอบต่าง ๆ ของโปรแกรมอย่างละเอียด รวมถึงการทำงานแบบ concurrent ผ่าน goroutines และ channels
+
+  
 ---
 - Activity Diagram 
 
