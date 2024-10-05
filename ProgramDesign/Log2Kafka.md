@@ -1,4 +1,4 @@
-# โปรแกรม Kafka producer by Go
+# โปรแกรม Kafka producer by [Go](https://github.com/pitimon/eduroam-log-kafka)
 
 > copy โค๊ดด้านล่างของรูป ขยายที่ [plantUML render](https://plantuml.ipv9.me) เพื่อตวามชัดเจนของรูปได้
 ---
