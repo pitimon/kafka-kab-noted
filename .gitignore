@@ -33,3 +33,5 @@ bind9-secLog-demo/log-consumer-Python/output
 bind9-secLog-demo/log-consumer-Python/env
 bind9-secLog-demo/log-consumer-Python/kafka_log_processor.py-*
 bind9-secLog-demo/log-consumer-Python/log*
+
+.DS_Store
