@@ -29,34 +29,10 @@ def load_properties(filename):
     
     return properties
 
-
-# def create_spark_session(properties):
-#     return SparkSession.builder \
-#         .appName("KafkaLogProcessor") \
-#         .config("spark.jars.packages", "org.apache.spark:spark-sql-kafka-0-10_2.12:3.5.3") \
-#         .config("spark.driver.extraJavaOptions", "-Djava.security.manager=allow") \
-#         .config("spark.executor.extraJavaOptions", "-Djava.security.manager=allow") \
-#         .config("spark.driver.extraJavaOptions", "-Djavax.net.debug=ssl,handshake -Djava.security.debug=all") \
-#         .config("spark.executor.extraJavaOptions", "-Djavax.net.debug=ssl,handshake -Djava.security.debug=all") \
-#         .config("spark.kafka.bootstrap.servers", properties['bootstrap.servers']) \
-#         .config("spark.kafka.sasl.jaas.config", properties['sasl.jaas.config']) \
-#         .config("spark.kafka.security.protocol", properties['security.protocol']) \
-#         .config("spark.kafka.sasl.mechanism", properties['sasl.mechanism']) \
-#         .config("spark.kafka.ssl.truststore.location", properties['ssl.truststore.location']) \
-#         .config("spark.kafka.ssl.truststore.password", properties['ssl.truststore.password']) \
-#         .config("spark.kafka.ssl.endpoint.identification.algorithm", properties['ssl.endpoint.identification.algorithm']) \
-#         .config("spark.kafka.ssl.protocol", properties['ssl.protocol']) \
-#         .config("spark.kafka.ssl.enabled.protocols", properties['ssl.enabled.protocols']) \
-#         .config("spark.driver.extraJavaOptions", "-Djavax.net.debug=ssl,handshake") \
-#         .getOrCreate()
-
 def create_spark_session(properties):
     return SparkSession.builder \
         .appName("KafkaLogProcessor") \
-        .master("spark://172.31.0.74:7077") \
-        .config("spark.submit.deployMode", "client") \
         .config("spark.jars.packages", "org.apache.spark:spark-sql-kafka-0-10_2.12:3.5.3") \
-        .config("spark.driver.host", "localhost") \
         .config("spark.driver.extraJavaOptions", "-Djava.security.manager=allow") \
         .config("spark.executor.extraJavaOptions", "-Djava.security.manager=allow") \
         .config("spark.driver.extraJavaOptions", "-Djavax.net.debug=ssl,handshake -Djava.security.debug=all") \
@@ -72,7 +48,7 @@ def create_spark_session(properties):
         .config("spark.kafka.ssl.enabled.protocols", properties['ssl.enabled.protocols']) \
         .config("spark.driver.extraJavaOptions", "-Djavax.net.debug=ssl,handshake") \
         .getOrCreate()
-    
+
 def write_batch(df, epoch_id, output_path):
     now = datetime.datetime.now()
     output_file = f"{output_path}/results_{now.strftime('%Y%m%d_%H%M%S')}.json"
