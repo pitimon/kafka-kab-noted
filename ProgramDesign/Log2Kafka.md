@@ -449,6 +449,7 @@ ProgressTracker ..> LineProcessor : monitors
 - LineProcessor ส่งข้อความไปยัง AsyncProducer
 - ProgressTracker ติดตามความคืบหน้าของ FileProcessor และ LineProcessor
 
-
-
+---
+- นำไปใช้อ่าน history log produce to kafka topics
+![](./img/l2k-real.png)
 ---
