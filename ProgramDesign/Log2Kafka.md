@@ -1,6 +1,6 @@
 # โปรแกรม Kafka producer
 
-## [plantUML render here..](https://plantuml.ipv9.me)
+> copy โค๊ดด้านล่างของรูป ขยายที่ [plantUML render](https://plantuml.ipv9.me) เพื่อตวามชัดเจนของรูปได้
 
 - Sequence Diagram: Diagram นี้แสดงการโต้ตอบระหว่างส่วนประกอบต่าง ๆ ของโปรแกรมอย่างละเอียด รวมถึงการทำงานแบบ concurrent ผ่าน goroutines และ channels 
 
