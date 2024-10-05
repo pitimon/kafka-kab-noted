@@ -1,5 +1,6 @@
 # Kafka Ep1: Producer data to kafka broker (Go Language)
 - [Loom clip](https://www.loom.com/share/c5e16d1102734e8c81048e418f9bf0a7?sid=afcb5064-80f3-4036-b78e-c6f2ac412fcd)
+- [Program Docs](https://github.com/pitimon/kafka-mylab-noted/blob/main/ProgramDesign/Log2Kafka.md)
 ---
 ## Kafka Producer Program:
 
