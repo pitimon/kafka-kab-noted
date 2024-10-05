@@ -2,7 +2,7 @@
 
 ## [plantUML render here..](https://plantuml.ipv9.me)
 
-- Sequence Diagram 
+- Sequence Diagram: Diagram นี้แสดงการโต้ตอบระหว่างส่วนประกอบต่าง ๆ ของโปรแกรมอย่างละเอียด รวมถึงการทำงานแบบ concurrent ผ่าน goroutines และ channels 
 
 ![SeqDiagram](./img/l2k-seq.png)
 
@@ -117,11 +117,11 @@ deactivate Main
 
 11. Main แสดงข้อความสรุปและเสร็จสิ้นโปรแกรม
 
-Diagram นี้แสดงการโต้ตอบระหว่างส่วนประกอบต่าง ๆ ของโปรแกรมอย่างละเอียด รวมถึงการทำงานแบบ concurrent ผ่าน goroutines และ channels
+
 
   
 ---
-- Activity Diagram 
+- Activity Diagram: Diagram นี้แสดงรายละเอียดการทำงานในระดับที่ลึกขึ้น รวมถึงการใช้ goroutines, channels, และการประมวลผลแบบขนาน ซึ่งเป็นลักษณะสำคัญของโปรแกรม Go 
 
 ![act](./img/l2k-act.png)
 
@@ -201,10 +201,14 @@ stop
 7. ปิด Kafka producer
 8. จัดการข้อผิดพลาดที่อาจเหลืออยู่จาก producer
 
-Diagram นี้แสดงรายละเอียดการทำงานในระดับที่ลึกขึ้น รวมถึงการใช้ goroutines, channels, และการประมวลผลแบบขนาน ซึ่งเป็นลักษณะสำคัญของโปรแกรม Go
+
 
 ---
-- Use Case Diagram 
+- Use Case Diagram: Diagram นี้ให้ภาพรวมที่ละเอียดมากขึ้นของระบบ Kafka Producer โดยแสดงให้เห็นถึง:
+  - กรณีการใช้งานย่อยที่ประกอบกันเป็นฟังก์ชันการทำงานหลัก
+  - ความสัมพันธ์ที่ซับซ้อนระหว่าง Use Cases ต่าง ๆ
+  - การปฏิสัมพันธ์กับระบบภายนอก (Kafka Cluster และ File System)
+  - บทบาทที่แตกต่างกันของ User และ System Administrator 
 
 ![usecase](./img/l2k-usecase.png)
 
@@ -330,14 +334,10 @@ UC1_1 --> fs
    - แสดงให้เห็นว่า System Administrator มีบทบาทในการกำหนดค่าการเชื่อมต่อ Kafka และจัดการทรัพยากรระบบ
    - เพิ่ม Use Case สำหรับการจัดการทรัพยากรระบบ (UC8) ซึ่งรวมถึงการควบคุม concurrency และการใช้หน่วยความจำ
 
-Diagram นี้ให้ภาพรวมที่ละเอียดมากขึ้นของระบบ Kafka Producer โดยแสดงให้เห็นถึง:
-- กรณีการใช้งานย่อยที่ประกอบกันเป็นฟังก์ชันการทำงานหลัก
-- ความสัมพันธ์ที่ซับซ้อนระหว่าง Use Cases ต่าง ๆ
-- การปฏิสัมพันธ์กับระบบภายนอก (Kafka Cluster และ File System)
-- บทบาทที่แตกต่างกันของ User และ System Administrator
+
 
 ---
-- Class Diagram แสดงโครงสร้างของคลาสและความสัมพันธ์ระหว่างคลาสต่าง ๆ ที่สำคัญในโปรแกรม
+- Class Diagram: Diagram นี้แสดงให้เห็นโครงสร้างและความสัมพันธ์ระหว่างคลาสต่าง ๆ ในโปรแกรม ช่วยให้เข้าใจการออกแบบและการแบ่งความรับผิดชอบของแต่ละส่วนในระบบ แสดงโครงสร้างของคลาสและความสัมพันธ์ระหว่างคลาสต่าง ๆ ที่สำคัญในโปรแกรม
 
 ![class](./img/l2k-class.png)
 
@@ -432,6 +432,6 @@ ProgressTracker ..> LineProcessor : monitors
 - LineProcessor ส่งข้อความไปยัง AsyncProducer
 - ProgressTracker ติดตามความคืบหน้าของ FileProcessor และ LineProcessor
 
-Diagram นี้แสดงให้เห็นโครงสร้างและความสัมพันธ์ระหว่างคลาสต่าง ๆ ในโปรแกรม ช่วยให้เข้าใจการออกแบบและการแบ่งความรับผิดชอบของแต่ละส่วนในระบบ
+
 
 ---
