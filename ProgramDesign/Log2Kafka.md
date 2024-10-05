@@ -2,9 +2,9 @@
 
 ## [plantUML render here..](https://plantuml.ipv9.me)
 
-### Use case diagram
-
 - Sequence Diagram 
+
+![SeqDiagram](./img/l2k-seq.png)
 
 ```plantuml
 @startuml
@@ -123,6 +123,7 @@ Diagram นี้แสดงการโต้ตอบระหว่างส
 ---
 - Activity Diagram 
 
+![act](./img/l2k-act.png)
 
 ```plantuml
 @startuml
@@ -183,7 +184,7 @@ stop
 
 ```
 
-คำอธิบายสำหรับ PlantUML code ระดับต่ำนี้:
+คำอธิบาย:
 
 1. เริ่มต้นด้วยการรับข้อมูลจากผู้ใช้สำหรับการตั้งค่าต่าง ๆ
 2. อ่านไฟล์ properties ของ Kafka
@@ -204,6 +205,8 @@ Diagram นี้แสดงรายละเอียดการทำงา
 
 ---
 - Use Case Diagram 
+
+![usecase](./img/l2k-usecase.png)
 
 ```plantuml
 @startuml
@@ -294,7 +297,7 @@ UC1_1 --> fs
 
 ```
 
-คำอธิบายสำหรับ Use Case Diagram ที่ละเอียดขึ้นนี้:
+คำอธิบายสำหรับ Use Case Diagram:
 
 1. Actors (ผู้กระทำ):
    - User: ผู้ใช้งานทั่วไปของโปรแกรม
@@ -336,6 +339,7 @@ Diagram นี้ให้ภาพรวมที่ละเอียดมา
 ---
 - Class Diagram แสดงโครงสร้างของคลาสและความสัมพันธ์ระหว่างคลาสต่าง ๆ ที่สำคัญในโปรแกรม
 
+![class](./img/l2k-class.png)
 
 ```plantuml
 @startuml
